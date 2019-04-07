@@ -1,20 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseGatherer.Core", "LicenseGatherer.Core\LicenseGatherer.Core.csproj", "{5DA3A8DF-943B-491A-9BA4-8B06AF7CEE8B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C46EB8D8-9BDF-4B8A-BDCB-76DE1D91B44B}"
 	ProjectSection(SolutionItems) = preProject
-		..\build.ps1 = ..\build.ps1
 		Directory.Build.props = Directory.Build.props
-		..\paket.dependencies = ..\paket.dependencies
+		..\Readme.md = ..\Readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenseGatherer.Core.Tests", "LicenseGatherer.Core.Tests\LicenseGatherer.Core.Tests.csproj", "{388146D1-17ED-4A40-A279-B68333348A66}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseGatherer.Core.Tests", "LicenseGatherer.Core.Tests\LicenseGatherer.Core.Tests.csproj", "{388146D1-17ED-4A40-A279-B68333348A66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenseGatherer", "LicenseGatherer\LicenseGatherer.csproj", "{34120666-7773-4E6D-91C8-20E5834D4DF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseGatherer", "LicenseGatherer\LicenseGatherer.csproj", "{34120666-7773-4E6D-91C8-20E5834D4DF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

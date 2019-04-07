@@ -11,7 +11,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using static System.FormattableString;
+
 using Environment = LicenseGatherer.Core.Environment;
 
 namespace LicenseGatherer
