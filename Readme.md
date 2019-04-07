@@ -1,5 +1,7 @@
 # dotnet-license-gatherer
 
+[![Build Status](https://manne.visualstudio.com/public/_apis/build/status/manne.dotnet-license-gatherer?branchName=master)](https://manne.visualstudio.com/public/_build/latest?definitionId=1&branchName=master) ![GitHub](https://img.shields.io/github/license/manne/dotnet-license-gatherer.svg?style=flat-square)
+
 > dotnet-license-gatherer provides license information from all transitive NuGet dependencies of your solution.
 
 ## Installation
