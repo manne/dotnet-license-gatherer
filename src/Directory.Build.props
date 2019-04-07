@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <LangVersion>7.1</LangVersion>
+    <NoWarn>$(NoWarn);NU1603;NU1604;NU1605;NU1608</NoWarn>
   </PropertyGroup>
 
 </Project>
