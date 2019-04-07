@@ -16,18 +16,13 @@
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.3" />
     <PackageReference Include="McMaster.Extensions.Hosting.CommandLine" Version="2.3.3" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LicenseGatherer.Core\LicenseGatherer.Core.csproj" />
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Build.Locator">
-      <HintPath>..\..\..\MSBuildLocator\samples\BuilderApp\bin\Debug\netcoreapp2.1\Microsoft.Build.Locator.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

@@ -32,7 +32,9 @@ namespace LicenseGatherer
         }
 
         // ReSharper disable UnusedMember.Local
+#pragma warning disable IDE0051 // Remove unused private members
         private async Task<int> OnExecuteAsync()
+#pragma warning restore IDE0051 // Remove unused private members
         // ReSharper restore UnusedMember.Local
         {
             var cancellationToken = CancellationToken.None;
