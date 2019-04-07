@@ -55,7 +55,7 @@ namespace LicenseGatherer.Core
             return AnalyzeProject(_fileSystem.FileInfo.FromFileName(projectOrSolutionPath));
         }
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeProject(FileInfoBase projectFile)
+        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeProject(IFileInfo projectFile)
         {
             const string projectAssetsPropertyName = "ProjectAssetsFile";
 

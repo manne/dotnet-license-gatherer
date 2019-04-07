@@ -88,11 +88,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[3.1.1, )",
-        "resolved": "3.1.1",
-        "contentHash": "kkn+oxGgg6P9Hjnma7Fz55IWHWZ2cRynJFCmXgKuv9nQarqyY+dg20/lxDcroLsXDj22XlFPKa/XdXXEwM1kfQ==",
+        "requested": "[4.0.11, )",
+        "resolved": "4.0.11",
+        "contentHash": "UE7DcwWVqJWe4UTFgQBXlB4d++Dc88wfEUXJK87oT0LT2ET3r0fjJ2ohmT26tfItKaIp6/LX1xT4BG0MwGqojw==",
         "dependencies": {
-          "System.IO.Abstractions": "3.1.1"
+          "System.IO.Abstractions": "4.0.11"
         }
       },
       "xunit": {
@@ -942,8 +942,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "31PQMZyGpvQbGyl1Ibe2AnqKYl2UnoNn9l7uKA8z+yRQVTqajXmGEk2xl2w+BofnZB3opC/Dk2oJfUmQdbfmmA==",
+        "resolved": "4.0.11",
+        "contentHash": "MPuQHY8Sn5YUwu+JD8HRpzUCwrniN1wMQLwz5Z/Nm8LTFMAtT0Eb+I0iRAalzGbwDdIODCxc8PgDIry1Jsbcrg==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.5.0"
         }
@@ -1800,7 +1800,7 @@
           "Microsoft.NETCore.Platforms": "2.2.0",
           "NuGet.ProjectModel": "4.9.4",
           "System.Collections.Immutable": "1.5.0",
-          "System.IO.Abstractions": "3.1.1",
+          "System.IO.Abstractions": "4.0.11",
           "System.IO.FileSystem.AccessControl": "4.5.0",
           "System.Security.AccessControl": "4.5.0",
           "System.Security.Principal.Windows": "4.5.1"
