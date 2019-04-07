@@ -1,6 +1,8 @@
 ﻿using System;
 
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace LicenseGatherer.Core.Tests
@@ -10,7 +12,7 @@ namespace LicenseGatherer.Core.Tests
         [Fact]
         public void GivenOneHtmlGithubUrl_WhenCorrection_ThenTheCorrectedUrl_ShouldBeOnPointingToItsDownload()
         {
-            var uriCorrector = new UriCorrector();
+            var uriCorrector = new UriCorrector(Mock.Of<ILogger<UriCorrector>>());
             var input = new Uri("https://github.com/dotnet/corefx/blob/master/LICENSE.TXT");
             var corrected = uriCorrector.Correct(new[] {input});
 
