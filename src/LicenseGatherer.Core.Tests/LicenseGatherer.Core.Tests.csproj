@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;netcoreapp20</TargetFrameworks>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,10 +19,19 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
+
+    <PackageReference Include="Microsoft.Build" Version="15.8.166" IncludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" IncludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LicenseGatherer.Core\LicenseGatherer.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Locator">
+      <HintPath>..\..\..\MSBuildLocator\samples\BuilderApp\bin\Debug\netcoreapp2.1\Microsoft.Build.Locator.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

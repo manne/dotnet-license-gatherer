@@ -22,7 +22,6 @@ namespace LicenseGatherer.Core
         private readonly IFileSystem _fileSystem;
         private readonly IEnvironment _environment;
 
-
         public ProjectDependencyResolver(IFileSystem fileSystem, IEnvironment environment)
         {
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
@@ -70,11 +69,11 @@ namespace LicenseGatherer.Core
                 {
                     lastCurrentDirectory = _environment.CurrentDirectory;
                     _environment.CurrentDirectory = projectFile.DirectoryName;
+                    var projectCollection = new ProjectCollection();
 
-                    var project = new Project(xmlStream, null, null, new ProjectCollection());
+                    var project = new Project(xmlStream, null, null, projectCollection);
                     var relativePath = project.GetPropertyValue(projectAssetsPropertyName);
                     assetFileLocation = _fileSystem.Path.Combine(projectFile.Directory.FullName, relativePath);
-
                 }
                 finally
                 {

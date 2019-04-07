@@ -1,8 +1,9 @@
 using System;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
-
+using System.Linq;
 using FluentAssertions;
+using Microsoft.Build.Locator;
 using Moq;
 using Xunit;
 
@@ -10,6 +11,15 @@ namespace LicenseGatherer.Core.Tests
 {
     public class ProjectDependencyResolverTests
     {
+        public ProjectDependencyResolverTests()
+        {
+            if (MSBuildLocator.CanRegister)
+            {
+                var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
+                MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
+            }
+        }
+
         [Fact]
         public void GivenOnePathToOneDirectory_WhenInThisDirectoryIsNotAnySolution_ThenOneDirectoryNotFoundException_ShouldBeThrown()
         {
@@ -30,7 +40,6 @@ namespace LicenseGatherer.Core.Tests
             Action action = () => cut.ResolveDependencies(@"c:\foo\bar\aa.fooproj");
             action.Should().Throw<DirectoryNotFoundException>();
         }
-
 
         [Fact]
         public void GivenOnePathToOneDirectory_WhenInThisDirectoryDoesNotContainOneSolutionFile_ThenOneException_ShouldBeThrown()
@@ -92,7 +101,7 @@ namespace LicenseGatherer.Core.Tests
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
             Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj");
-            action.Should().Throw<FileNotFoundException>();
+            action.Should().Throw<FileNotFoundException>().And.Message.Should().StartWith("The file does not exist");
         }
 
         [Fact]

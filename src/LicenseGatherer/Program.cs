@@ -1,4 +1,9 @@
-﻿using System;
+﻿using LicenseGatherer.Core;
+using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Build.Locator;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -6,12 +11,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using LicenseGatherer.Core;
-using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
-
 using static System.FormattableString;
 using Environment = LicenseGatherer.Core.Environment;
 
@@ -39,6 +38,8 @@ namespace LicenseGatherer
             var cancellationToken = CancellationToken.None;
             var fileSystem = new FileSystem();
             var environment = new Environment();
+            var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
+            MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
             var projectDependencyResolver = new ProjectDependencyResolver(fileSystem, environment);
             Console.WriteLine("Resolving dependencies");
             var dependencies = projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);

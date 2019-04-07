@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <Version>0.0.1</Version>
     <Authors>Manuel Pfemeter</Authors>
     <Product />
@@ -21,7 +21,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LicenseGatherer.Core\LicenseGatherer.Core.csproj" />
-    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath=""/>
+    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Locator">
+      <HintPath>..\..\..\MSBuildLocator\samples\BuilderApp\bin\Debug\netcoreapp2.1\Microsoft.Build.Locator.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
