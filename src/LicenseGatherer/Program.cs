@@ -1,16 +1,20 @@
-﻿using LicenseGatherer.Core;
-using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Build.Locator;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using LicenseGatherer.Core;
+using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Build.Locator;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 using static System.FormattableString;
 
@@ -20,6 +24,12 @@ namespace LicenseGatherer
 {
     public class Program
     {
+        private readonly UriCorrector _uriCorrector;
+        private readonly LicenseLocator _licenseLocator;
+        private readonly IFileSystem _fileSystem;
+        private readonly ProjectDependencyResolver _projectDependencyResolver;
+        private readonly LicenseDownloader _downloader;
+
         [Option(Description = "The subject", LongName = "path", ShortName = "p")]
         public string PathToProjectOrSolution { get; set; }
 
@@ -29,8 +39,40 @@ namespace LicenseGatherer
         public static async Task<int> Main(string[] args)
         {
             var exitCode = await new HostBuilder()
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    var env = context.HostingEnvironment;
+                    config
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", optional: true)
+                        .AddJsonFile(Invariant($"appsettings.{env.EnvironmentName}.json"), optional: true);
+                })
+                .ConfigureLogging((context, logging) =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Information);
+                    logging.AddConsole();
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<UriCorrector>();
+                    services.AddSingleton<LicenseLocator>();
+                    services.AddSingleton<IFileSystem, FileSystem>();
+                    services.AddSingleton<IEnvironment, Environment>();
+                    services.AddSingleton<ProjectDependencyResolver>();
+                    services.AddHttpClient<LicenseDownloader>();
+                })
                 .RunCommandLineApplicationAsync<Program>(args);
             return exitCode;
+        }
+
+        public Program(UriCorrector uriCorrector, LicenseLocator licenseLocator, IFileSystem fileSystem,
+            ProjectDependencyResolver projectDependencyResolver, LicenseDownloader licenseDownloader)
+        {
+            _uriCorrector = uriCorrector;
+            _licenseLocator = licenseLocator;
+            _fileSystem = fileSystem;
+            _projectDependencyResolver = projectDependencyResolver;
+            _downloader = licenseDownloader;
         }
 
         // ReSharper disable UnusedMember.Local
@@ -40,64 +82,56 @@ namespace LicenseGatherer
         // ReSharper restore UnusedMember.Local
         {
             var cancellationToken = CancellationToken.None;
-            var fileSystem = new FileSystem();
-            var environment = new Environment();
             var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
             MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
-            var projectDependencyResolver = new ProjectDependencyResolver(fileSystem, environment);
+
             Console.WriteLine("Resolving dependencies");
-            var dependencies = projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
+            var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
 
-            using (var httpClient = new HttpClient())
+            Console.WriteLine("Extracting licensing information");
+            var licenseSpecs = _licenseLocator.Provide(dependencies);
+
+            Console.WriteLine("Correcting license locations");
+            var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Distinct(EqualityComparer<Uri>.Default));
+
+            Console.WriteLine("Downloading licenses");
+            var licenses = await _downloader.DownloadAsync(correctedLicenseLocations.Values.Select(v => v.corrected), cancellationToken);
+
+            var licenseDependencyInformation = new List<LicenseDependencyInformation>();
+
+            foreach (var (package, location) in licenseSpecs)
             {
-                var licenseProvider = new LicenseLocator();
-                Console.WriteLine("Extracting licensing information");
-                var licenseSpecs = licenseProvider.Provide(dependencies);
+                var correctedUrl = correctedLicenseLocations[location].corrected;
+                var content = licenses.First(l => l.Key == correctedUrl);
+                var dependencyInformation = new LicenseDependencyInformation(package, content.Value, location, correctedUrl);
 
-                var uriCorrector = new UriCorrector();
-                Console.WriteLine("Correcting license locations");
-                var correctedLicenseLocations = uriCorrector.Correct(licenseSpecs.Values.Distinct(EqualityComparer<Uri>.Default));
+                licenseDependencyInformation.Add(dependencyInformation);
+            }
 
-                var downloader = new LicenseDownloader(httpClient);
-                Console.WriteLine("Downloading licenses");
-                var licenses = await downloader.DownloadAsync(correctedLicenseLocations.Values.Select(v => v.corrected), cancellationToken);
-
-                var licenseDependencyInformation = new List<LicenseDependencyInformation>();
-
-                foreach (var (package, location) in licenseSpecs)
+            if (OutputPath != null)
+            {
+                var outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
+                if (outputFile.Exists)
                 {
-                    var correctedUrl = correctedLicenseLocations[location].corrected;
-                    var content = licenses.First(l => l.Key == correctedUrl);
-                    var dependencyInformation = new LicenseDependencyInformation(package, content.Value, location, correctedUrl);
-
-                    licenseDependencyInformation.Add(dependencyInformation);
+                    Console.WriteLine("The file to write the output to already exists");
+                    return 1;
                 }
 
-                if (OutputPath != null)
+                var fileContent = JsonConvert.SerializeObject(licenseDependencyInformation, Formatting.Indented);
+
+                using (var writer = outputFile.OpenWrite())
                 {
-                    var outputFile = fileSystem.FileInfo.FromFileName(OutputPath);
-                    if (outputFile.Exists)
-                    {
-                        Console.WriteLine("The file to write the output to already exists");
-                        return 1;
-                    }
-
-                    var fileContent = JsonConvert.SerializeObject(licenseDependencyInformation, Formatting.Indented);
-
-                    using (var writer = outputFile.OpenWrite())
-                    {
-                        var encoding = new UTF8Encoding(false, true);
-                        var bytes = encoding.GetBytes(fileContent);
-                        await writer.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
-                    }
+                    var encoding = new UTF8Encoding(false, true);
+                    var bytes = encoding.GetBytes(fileContent);
+                    await writer.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
                 }
-                else
+            }
+            else
+            {
+                Console.WriteLine(Invariant($"Licenses of {PathToProjectOrSolution}"));
+                foreach (var dependencyInformation in licenseDependencyInformation)
                 {
-                    Console.WriteLine(Invariant($"Licenses of {PathToProjectOrSolution}"));
-                    foreach (var dependencyInformation in licenseDependencyInformation)
-                    {
-                        Console.WriteLine(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version {dependencyInformation.PackageReference.ResolvedVersion})"));
-                    }
+                    Console.WriteLine(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version {dependencyInformation.PackageReference.ResolvedVersion})"));
                 }
             }
 

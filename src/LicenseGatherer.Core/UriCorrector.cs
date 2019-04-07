@@ -3,35 +3,55 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 namespace LicenseGatherer.Core
 {
     public class UriCorrector
     {
+        private readonly ILogger<UriCorrector> _logger;
+
+        public UriCorrector(ILogger<UriCorrector> logger)
+        {
+            _logger = logger;
+        }
+
         public IImmutableDictionary<Uri, (Uri corrected, bool wasCorrected)> Correct(IEnumerable<Uri> licenseLocations)
         {
             var result = new Dictionary<Uri, (Uri corrected, bool wasCorrected)>(EqualityComparer<Uri>.Default);
-            foreach (var location in licenseLocations)
+            using (_logger.BeginScope("Correcting URLs"))
             {
-                Uri correctedLocation = null;
-                bool wasCorrected = false;
-                if ("github.com" == location.Host || "www.github.com" == location.Host)
+                foreach (var location in licenseLocations)
                 {
-                    var segments = location.Segments;
-                    if (segments.Length > 3 && segments[4] != "raw")
+                    Uri correctedLocation = null;
+                    bool wasCorrected = false;
+                    if (location == null)
                     {
-                        var li = segments.ToList();
-                        li.RemoveAt(3);
-                        correctedLocation = new Uri(new Uri("https://raw.githubusercontent.com"), string.Join("", li.Select(s => s)));
-                        wasCorrected = true;
+                        _logger.LogInformation("no uri");
+                        continue;
                     }
-                }
 
-                if (!wasCorrected)
-                {
-                    correctedLocation = location;
-                }
+                    if ("github.com" == location.Host || "www.github.com" == location.Host)
+                    {
+                        var segments = location.Segments;
+                        if (segments.Length > 3 && segments[4] != "raw")
+                        {
+                            var li = segments.ToList();
+                            li.RemoveAt(3);
+                            correctedLocation = new Uri(new Uri("https://raw.githubusercontent.com"), string.Join("", li.Select(s => s)));
+                            wasCorrected = true;
 
-                result.Add(location, (correctedLocation, wasCorrected));
+                            _logger.LogInformation("Corrected url from {SourceLicenseUrl} to {TargetLicenseUrl}", location, correctedLocation);
+                        }
+                    }
+
+                    if (!wasCorrected)
+                    {
+                        correctedLocation = location;
+                    }
+
+                    result.Add(location, (correctedLocation, wasCorrected));
+                }
             }
 
             return ImmutableDictionary.CreateRange(result);

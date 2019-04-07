@@ -2,7 +2,7 @@
   "profiles": {
     "LicenseGatherer": {
       "commandName": "Project",
-      "commandLineArgs": "-p \"..\\..\\..\\..\\LicenseGatherer.Core\\LicenseGatherer.Core.csproj\" -o \"licenses.json\""
+      "commandLineArgs": "-p \"..\\..\\..\\..\\license-gatherer.sln\" -o \"licenses.json\""
     }
   }
 }

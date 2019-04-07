@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Xml;
-
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using NuGet.Common;
@@ -52,10 +52,43 @@ namespace LicenseGatherer.Core
                 throw new FileNotFoundException("The file does not exist", projectOrSolutionPath);
             }
 
-            return AnalyzeProject(_fileSystem.FileInfo.FromFileName(projectOrSolutionPath));
+            return AnalyzeFileInfo(_fileSystem.FileInfo.FromFileName(projectOrSolutionPath));
         }
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeProject(IFileInfo projectFile)
+        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeFileInfo(IFileInfo projectFile)
+        {
+            if (".sln".Equals(projectFile.Extension, StringComparison.OrdinalIgnoreCase))
+            {
+                return AnalyzeSolutionFile(projectFile);
+            }
+            else
+            {
+                return AnalyzeProjectFile(projectFile);
+            }
+        }
+
+        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeSolutionFile(IFileInfo solutionFile)
+        {
+            var solution = SolutionFile.Parse(solutionFile.FullName);
+            var projects = solution.ProjectsInOrder;
+            var fileSystem = solutionFile.FileSystem;
+            var result = new List<KeyValuePair<InstalledPackageReference, LocalPackageInfo>>();
+            foreach (var project in projects)
+            {
+                if (project.ProjectType == SolutionProjectType.SolutionFolder)
+                {
+                    continue;
+                }
+
+                var projectFile = fileSystem.FileInfo.FromFileName(project.AbsolutePath);
+                var info = AnalyzeProjectFile(projectFile);
+                result.AddRange(info);
+            }
+
+            return ImmutableDictionary.CreateRange(result);
+        }
+
+        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeProjectFile(IFileInfo projectFile)
         {
             const string projectAssetsPropertyName = "ProjectAssetsFile";
 
