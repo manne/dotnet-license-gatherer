@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
     <PackageReference Include="MaxKagamine.Moq.HttpClient" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="4.0.11" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -19,19 +20,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
-
-    <PackageReference Include="Microsoft.Build" Version="16.0.461" IncludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" IncludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LicenseGatherer.Core\LicenseGatherer.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Build.Locator">
-      <HintPath>..\..\..\MSBuildLocator\samples\BuilderApp\bin\Debug\netcoreapp2.1\Microsoft.Build.Locator.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

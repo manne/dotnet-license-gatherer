@@ -21,35 +21,11 @@
           "Moq": "[4.8.0, 5.0.0)"
         }
       },
-      "Microsoft.Build": {
+      "Microsoft.Build.Locator": {
         "type": "Direct",
-        "requested": "[16.0.461, )",
-        "resolved": "16.0.461",
-        "contentHash": "dbTDu5PVxSmWuZYd5bAnuv+VUkOvjsYJC8q5GazzNKZGB3R2lSPtBeP2VgnEBZEOKChpEgKxaisAVqIbX6XfTQ==",
-        "dependencies": {
-          "Microsoft.Build.Framework": "16.0.461",
-          "Microsoft.Win32.Registry": "4.3.0",
-          "System.Collections.Immutable": "1.5.0",
-          "System.Diagnostics.TraceSource": "4.0.0",
-          "System.Reflection.Metadata": "1.6.0",
-          "System.Reflection.TypeExtensions": "4.1.0",
-          "System.Runtime.Loader": "4.0.0",
-          "System.Security.Principal.Windows": "4.3.0",
-          "System.Text.Encoding.CodePages": "4.0.1",
-          "System.Threading.Tasks.Dataflow": "4.6.0"
-        }
-      },
-      "Microsoft.Build.Utilities.Core": {
-        "type": "Direct",
-        "requested": "[16.0.461, )",
-        "resolved": "16.0.461",
-        "contentHash": "1CBsIGirCn4iu/2P2bh1sbbuREJ+RziwQyexQx4n2qIVgrxGb6CNLJun4jW8SG4PRoIeoQvY+VdhhHzxRscQQA==",
-        "dependencies": {
-          "Microsoft.Build.Framework": "16.0.461",
-          "Microsoft.Win32.Registry": "4.3.0",
-          "System.Collections.Immutable": "1.5.0",
-          "System.Text.Encoding.CodePages": "4.0.1"
-        }
+        "requested": "[1.2.2, )",
+        "resolved": "1.2.2",
+        "contentHash": "tke8qeM7s23iapuxatU131tK89kdlOFZvDJ4IrX9pHJIiTPwjJO0Euw5/cSM6N8W2Q/NY/NEfJYoMFmBnbCUwQ=="
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
@@ -129,6 +105,23 @@
           "System.Xml.XmlDocument": "4.3.0"
         }
       },
+      "Microsoft.Build": {
+        "type": "Transitive",
+        "resolved": "16.0.461",
+        "contentHash": "dbTDu5PVxSmWuZYd5bAnuv+VUkOvjsYJC8q5GazzNKZGB3R2lSPtBeP2VgnEBZEOKChpEgKxaisAVqIbX6XfTQ==",
+        "dependencies": {
+          "Microsoft.Build.Framework": "16.0.461",
+          "Microsoft.Win32.Registry": "4.3.0",
+          "System.Collections.Immutable": "1.5.0",
+          "System.Diagnostics.TraceSource": "4.0.0",
+          "System.Reflection.Metadata": "1.6.0",
+          "System.Reflection.TypeExtensions": "4.1.0",
+          "System.Runtime.Loader": "4.0.0",
+          "System.Security.Principal.Windows": "4.3.0",
+          "System.Text.Encoding.CodePages": "4.0.1",
+          "System.Threading.Tasks.Dataflow": "4.6.0"
+        }
+      },
       "Microsoft.Build.Framework": {
         "type": "Transitive",
         "resolved": "16.0.461",
@@ -154,6 +147,17 @@
           "System.Reflection.TypeExtensions": "4.1.0",
           "System.Resources.Writer": "4.0.0",
           "System.Threading.Tasks.Dataflow": "4.6.0"
+        }
+      },
+      "Microsoft.Build.Utilities.Core": {
+        "type": "Transitive",
+        "resolved": "16.0.461",
+        "contentHash": "1CBsIGirCn4iu/2P2bh1sbbuREJ+RziwQyexQx4n2qIVgrxGb6CNLJun4jW8SG4PRoIeoQvY+VdhhHzxRscQQA==",
+        "dependencies": {
+          "Microsoft.Build.Framework": "16.0.461",
+          "Microsoft.Win32.Registry": "4.3.0",
+          "System.Collections.Immutable": "1.5.0",
+          "System.Text.Encoding.CodePages": "4.0.1"
         }
       },
       "Microsoft.CodeCoverage": {
