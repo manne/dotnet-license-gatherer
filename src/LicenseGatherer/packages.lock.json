@@ -1307,7 +1307,7 @@
           "System.Runtime.Handles": "4.3.0"
         }
       },
-      "LicenseGatherer.Core": {
+      "licensegatherer.core": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Build": "16.0.461",
