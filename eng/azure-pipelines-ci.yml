@@ -34,12 +34,8 @@ steps:
     nobuild: true
     includesymbols: true
     versioningScheme: 'off'
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '$(build.artifactstagingdirectory)'
-    artifact: 'generated_packages'
-    publishLocation: 'pipeline'
 - task: DotNetCoreCLI@2
+  displayName: Publish NuGet Packages
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
