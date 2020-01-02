@@ -39,7 +39,7 @@ steps:
     command: 'custom'
     projects: 'src/license-gatherer.sln'
     custom: 'pack'
-    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-build --version-suffix "-ci-$(Build.SourceVersion)-$(Date:yyyyMMdd)" --verbosity Detailed'
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-build --version-suffix "ci-$(Build.SourceVersion)-$(Date:yyyyMMdd)" --verbosity Detailed'
 - task: PublishPipelineArtifact@1
   inputs:
     targetPath: '$(Build.Artifactstagingdirectory)'
