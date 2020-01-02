@@ -10,6 +10,10 @@ variables:
   BuildConfiguration: Release
 
 steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    useGlobalJson: true
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
