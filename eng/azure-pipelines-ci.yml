@@ -23,5 +23,5 @@ steps:
   displayName: Test
   inputs:
     command: test
-    projects: 'src/**/*[Tt]ests/*.csproj'
+    projects: 'src/license-gatherer.sln'
     arguments: '--configuration $(BuildConfiguration)'
