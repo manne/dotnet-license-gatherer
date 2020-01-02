@@ -25,3 +25,11 @@ steps:
     command: test
     projects: 'src/license-gatherer.sln'
     arguments: '--configuration $(BuildConfiguration)'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    packagesToPack: 'src/license-gatherer.sln'
+    packDirectory: '$(Build.ArtifactStagingDirectory)'
+    nobuild: true
+    includesymbols: true
+    versioningScheme: 'off'

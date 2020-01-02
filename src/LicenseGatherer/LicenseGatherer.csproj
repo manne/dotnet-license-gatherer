@@ -3,14 +3,18 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>0.0.1</Version>
+    <Version>0.0.1-preview001</Version>
     <Authors>Manuel Pfemeter</Authors>
-    <Product />
+    <Product>LicenseGatherer</Product>
     <Company />
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <!--<PackAsTool>true</PackAsTool>
-    <ToolCommandName>license-gatherer</ToolCommandName>-->
+    <RepositoryUrl>https://github.com/manne/dotnet-license-gatherer/</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/manne/dotnet-license-gatherer/</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>license-gatherer</ToolCommandName>
+    <PackageOutputPath>./bin/</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
