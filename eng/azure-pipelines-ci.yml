@@ -44,8 +44,7 @@ steps:
     nobuild: true
     includesymbols: true
     versioningScheme: 'off'
-    buildProperties: '--version-suffix "-ci.$(Build.SourceVersion)+$(Build.BuildNumber)"'
-    
+    buildProperties: 'version-suffix=-ci.$(Build.SourceVersion)+$(Build.BuildNumber)'
 - task: DotNetCoreCLI@2
   displayName: Publish NuGet Packages
   inputs:
