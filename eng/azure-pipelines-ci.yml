@@ -33,3 +33,6 @@ steps:
     nobuild: true
     includesymbols: true
     versioningScheme: 'off'
+- publish: $(build.artifactstagingdirectory)
+    displayName: 'Publish pipeline artifact'
+    artifact: generated_packages
