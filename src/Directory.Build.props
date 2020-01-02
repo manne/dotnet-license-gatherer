@@ -1,8 +1,8 @@
 <Project>
 
   <PropertyGroup>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <RestoreLockedMode>true</RestoreLockedMode>
+    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode>true</RestoreLockedMode>-->
     <LangVersion>7.1</LangVersion>
     <NoWarn>$(NoWarn);NU1603;NU1604;NU1605;NU1608</NoWarn>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
