@@ -40,6 +40,8 @@ steps:
     projects: 'src/license-gatherer.sln'
     custom: 'pack'
     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-build --version-suffix "-ci-$(Build.SourceVersion)-$(Date:yyyyMMdd)" --verbosity Detailed'
-- publish: $(build.artifactstagingdirectory)
-    displayName: 'Publish pipeline artifact'
-    artifact: generated_packages
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.Artifactstagingdirectory)'
+    artifact: 'NuGetPackages'
+    publishLocation: 'pipeline'
