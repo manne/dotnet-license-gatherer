@@ -4,13 +4,8 @@ trigger:
 pool:
   vmImage: windows-2019
 
-variables:
-  buildConfiguration: 'Release'
-
 stages:
   - template: 'base.yml'
-    parameters:
-      buildConfiguration: $(buildConfiguration)
   - stage: Push CI NuGet package to Preview Feed
     dependsOn: Build
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
