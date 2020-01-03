@@ -43,7 +43,7 @@ stages:
               steps:
                 - download: current
                   artifact: NuGetPackages
-                - task: DotNetCoreCLI@2
+                - task: NuGetCommand@2
                   displayName: 'Invoke dotnet nuget push'
                   inputs:
                     command: 'push'
