@@ -5,7 +5,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>0.0.1-preview001</Version>
     <Authors>Manuel Pfemeter</Authors>
     <Product>LicenseGatherer</Product>
     <Company />
@@ -18,6 +17,9 @@
     <ToolCommandName>license-gatherer</ToolCommandName>
     <PackageOutputPath>./bin/</PackageOutputPath>
     <MinClientVersion>4.3.0</MinClientVersion>
+    <Description>Gathers licenses of a project and/or solution as a JSON file.</Description>
+    <PackageTags>license compliance</PackageTags>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>

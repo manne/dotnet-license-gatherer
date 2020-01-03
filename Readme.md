@@ -52,6 +52,31 @@ From **local** tool
 dotnet tool run license-gatherer -p c:\your\path\to\the\solutionfile.sln -o licenses.json
 ```
 
+### Output
+
+The generated JSON file consists of the following schema:
+
+An array of **package**s.
+One package has these properties
+
+| Name                                  | Type   | Explanation                                                                          |
+|---------------------------------------|--------|--------------------------------------------------------------------------------------|
+| [PackageReference](#packagereference) | object | An object containing information of the package                                      |
+| LicenseContent                        | string | The content of the license                                                           |
+| OriginalLicenseLocation               | string | The url of the given license.                                                        |
+| DownloadedLicenseLocation             | string | The corrected url of the license. E.g. It replaces the github url with the raw once. |
+
+#### PackageReference
+
+| Name                                | Type   | Explanation                                                                      |
+|-------------------------------------|--------|----------------------------------------------------------------------------------|
+| Name                                | string | The name of the package dependency                                               |
+| [ResolvedVersion](#resolvedversion) | object | The runtime version. This value can differ from the version in the configuration |
+
+#### ResolvedVersion
+
+Contains an object of the type [NuGet.Versioning.NuGetVersion](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Versioning/NuGetVersion.cs).
+
 ## License
 
 Licensed under [MIT](LICENSE.txt)
