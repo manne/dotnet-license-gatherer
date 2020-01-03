@@ -25,7 +25,7 @@ stages:
                   displayName: 'Invoke dotnet nuget push'
                   inputs:
                     command: 'push'
-                    packagesToPush: '$(Pipeline.Workspace)/ci/*.nupkg'
+                    packagesToPush: '$(Pipeline.Workspace)/NuGetPackages/ci/*.nupkg'
                     nuGetFeedType: 'internal'
                     publishVstsFeed: $(Azure.Artifacts.Id)
   # - stage: Production
