@@ -1,6 +1,9 @@
 trigger:
 - master
 
+pool:
+  vmImage: windows-2019
+
 stages:
   - template: 'base.yml'
   - stage: Staging
