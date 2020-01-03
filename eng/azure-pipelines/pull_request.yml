@@ -1,0 +1,18 @@
+trigger: none
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - '*'
+
+pool:
+  vmImage: windows-2019
+
+variables:
+  BuildConfiguration: 'Release'
+
+stages:
+  - template: 'base.yml'
+    parameters:
+      buildConfiguration: $(BuildConfiguration)
