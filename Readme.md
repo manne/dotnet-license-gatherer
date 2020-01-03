@@ -1,25 +1,55 @@
-# dotnet-license-gatherer
+# LicenseGatherer
 
-[![Build Status](https://manne.visualstudio.com/public/_apis/build/status/manne.dotnet-license-gatherer?branchName=master)](https://manne.visualstudio.com/public/_build/latest?definitionId=1&branchName=master) ![GitHub](https://img.shields.io/github/license/manne/dotnet-license-gatherer.svg?style=flat-square)
+[![Build Status](https://manne.visualstudio.com/public/_apis/build/status/manne.dotnet-license-gatherer?branchName=master)](https://manne.visualstudio.com/public/_build/latest?definitionId=1&branchName=master) ![Nuget](https://img.shields.io/nuget/v/LicenseGatherer?style=flat-square) ![GitHub](https://img.shields.io/github/license/manne/dotnet-license-gatherer.svg?style=flat-square)
 
-> dotnet-license-gatherer provides license information from all transitive NuGet dependencies of your solution.
+> LicenseGatherer provides license information from all transitive NuGet dependencies of your solution.
+
+## Limitation
+
+This tool only gathers licenses from projects using the project SDK.
 
 ## Installation
 
-> Coming soon!
+As **global** tool
+
+```batch
+dotnet tool install --global LicenseGatherer
+```
+
+As **local** tool
+
+```batch
+dotnet tool install LicenseGatherer
+```
 
 ## Usage
 
 ### Project
 
+From **global** tool
+
 ```batch
-dotnet .\LicenseGatherer.dll -p c:\your\path\to\the\projectfile.csproj -o licenses.json
+license-gatherer -p c:\your\path\to\the\projectfile.csproj -o licenses.json
+```
+
+From **local** tool
+
+```batch
+dotnet tool run license-gatherer -p c:\your\path\to\the\projectfile.csproj -o licenses.json
 ```
 
 ### Solution
 
+From **global** tool
+
 ```batch
-dotnet .\LicenseGatherer.dll -p c:\your\path\to\the\solutionfile.sln -o licenses.json
+license-gatherer -p c:\your\path\to\the\solutionfile.sln -o licenses.json
+```
+
+From **local** tool
+
+```batch
+dotnet tool run license-gatherer -p c:\your\path\to\the\solutionfile.sln -o licenses.json
 ```
 
 ## License
