@@ -13,35 +13,34 @@ stages:
     - job: PushToPreview
       steps:
         - checkout: none
-        - task: DownloadBuildArtifacts@0
-          displayName: 'Download NuGet Packages from Azure Pipelines'
+        - task: DownloadPipelineArtifact@2
           inputs:
-            artifactName: NuGetPackages
-            downloadPath: $(System.DefaultWorkingDirectory)
-            itemPattern: ci/
+            buildType: 'current'
+            artifactName: 'NuGetPackages'
+            itemPattern: '/ci/**'
+            targetPath: '$(Pipeline.Workspace)'
         - task: DotNetCoreCLI@2
           inputs:
             command: 'push'
-            packagesToPush: '$(System.DefaultWorkingDirectory)/*.nupkg'
+            packagesToPush: '$(Pipeline.Workspace)/*.nupkg'
             nuGetFeedType: 'internal'
             publishVstsFeed: $(Azure.Artifacts.Id)
-  - stage: Production
-    dependsOn: Staging
-    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
-    jobs:
-      - job: PushToNugetOrg
-        steps:
-          - checkout: none
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download NuGet Packages from Azure Pipelines'
-            inputs:
-              artifactName: NuGetPackages
-              downloadPath: $(System.DefaultWorkingDirectory)
-              itemPattern: master/
-          - task: DotNetCoreCLI@2
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-              nuGetFeedType: 'external'
-              publishFeedCredentials: 'NuGet.LicenseGatherer'
-
+  # - stage: Production
+  #   dependsOn: Staging
+  #   condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+  #   jobs:
+  #     - job: PushToNugetOrg
+  #       steps:
+  #         - checkout: none
+  #         - task: DownloadPipelineArtifact@2
+  #           inputs:
+  #             buildType: 'current'
+  #             artifactName: 'NuGetPackages'
+  #             itemPattern: '/master/**'
+  #             targetPath: '$(Pipeline.Workspace)'
+  #         - task: DotNetCoreCLI@2
+  #           inputs:
+  #             command: 'push'
+  #             packagesToPush: '$(Pipeline.Workspace)/*.nupkg'
+  #             nuGetFeedType: 'external'
+  #             publishFeedCredentials: 'NuGet.LicenseGatherer'
