@@ -18,10 +18,11 @@ stages:
           inputs:
             artifactName: NuGetPackages
             downloadPath: $(System.DefaultWorkingDirectory)
+            itemPattern: ci/
         - task: DotNetCoreCLI@2
           inputs:
             command: 'push'
-            packagesToPush: '$(System.DefaultWorkingDirectory)/ci/*.nupkg'
+            packagesToPush: '$(System.DefaultWorkingDirectory)/*.nupkg'
             nuGetFeedType: 'internal'
             publishVstsFeed: $(Azure.Artifacts.Id)
   - stage: Production
@@ -36,10 +37,11 @@ stages:
             inputs:
               artifactName: NuGetPackages
               downloadPath: $(System.DefaultWorkingDirectory)
+              itemPattern: master/
           - task: DotNetCoreCLI@2
             inputs:
               command: 'push'
-              packagesToPush: '$(Build.ArtifactStagingDirectory)/main/*.nupkg'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
               nuGetFeedType: 'external'
               publishFeedCredentials: 'NuGet.LicenseGatherer'
 
