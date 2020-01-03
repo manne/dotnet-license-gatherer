@@ -17,12 +17,10 @@ stages:
           inputs:
             buildType: 'current'
             artifactName: 'NuGetPackages'
-            itemPattern: '/ci/**'
-            targetPath: '$(Pipeline.Workspace)'
         - task: DotNetCoreCLI@2
           inputs:
             command: 'push'
-            packagesToPush: '$(Pipeline.Workspace)/*.nupkg'
+            packagesToPush: '$(Pipeline.Workspace)/ci/*.nupkg'
             nuGetFeedType: 'internal'
             publishVstsFeed: $(Azure.Artifacts.Id)
   # - stage: Production
