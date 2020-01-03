@@ -1,0 +1,43 @@
+variables:
+  BuildConfiguration: Release
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Build
+        steps:
+        - task: UseDotNet@2
+          inputs:
+            packageType: 'sdk'
+            useGlobalJson: true
+        - task: DotNetCoreCLI@2
+          displayName: Build
+          inputs:
+            projects: 'src/license-gatherer.sln'
+            arguments: '--configuration $(BuildConfiguration)'
+        - task: DotNetCoreCLI@2
+          displayName: Test
+          inputs:
+            command: test
+            projects: 'src/license-gatherer.sln'
+            arguments: '--configuration $(BuildConfiguration)'
+        - task: DotNetCoreCLI@2
+          displayName: Pack Master NuGet Packages
+          inputs:
+            command: 'custom'
+            projects: 'src/license-gatherer.sln'
+            custom: 'pack'
+            arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/master --no-build --verbosity Detailed'
+        - task: DotNetCoreCLI@2
+          displayName: Pack CI NuGet Packages
+          inputs:
+            command: 'custom'
+            projects: 'src/license-gatherer.sln'
+            custom: 'pack'
+            arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/ci --no-build --version-suffix "ci.$(Build.SourceVersion)" --verbosity Detailed'
+        - task: PublishPipelineArtifact@1
+          inputs:
+            targetPath: '$(Build.Artifactstagingdirectory)'
+            artifact: 'NuGetPackages'
+            publishLocation: 'pipeline'

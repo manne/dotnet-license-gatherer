@@ -1,0 +1,50 @@
+trigger:
+- master
+
+pool:
+  vmImage: windows-2019
+
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+  - template: 'base.yml'
+    parameters:
+      buildConfiguration: $(buildConfiguration)
+  - stage: Push CI NuGet package to Preview Feed
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    jobs:
+    - job: PushToPreview
+      steps:
+        - checkout: none
+        - task: DownloadBuildArtifacts@0
+          displayName: 'Download NuGet Packages from Azure Pipelines'
+          inputs:
+            artifactName: NuGetPackages
+            downloadPath: $(System.DefaultWorkingDirectory)
+        - task: DotNetCoreCLI@2
+          inputs:
+            command: 'push'
+            packagesToPush: '$(System.DefaultWorkingDirectory)/ci/*.nupkg'
+            nuGetFeedType: 'internal'
+            publishVstsFeed: $(Azure.Artifacts.Id)
+  - stage: Push Master NuGet package to NuGet.org Feed
+    dependsOn: Push CI NuGet package to Preview Feed
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    jobs:
+      - job: PushToNugetOrg
+        steps:
+          - checkout: none
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download NuGet Packages from Azure Pipelines'
+            inputs:
+              artifactName: NuGetPackages
+              downloadPath: $(System.DefaultWorkingDirectory)
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'push'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/main/*.nupkg'
+              nuGetFeedType: 'external'
+              publishFeedCredentials: 'NuGet.LicenseGatherer'
+

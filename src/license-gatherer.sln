@@ -7,7 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseGatherer.Core", "Lic
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C46EB8D8-9BDF-4B8A-BDCB-76DE1D91B44B}"
 	ProjectSection(SolutionItems) = preProject
-		..\eng\azure-pipelines-ci.yml = ..\eng\azure-pipelines-ci.yml
 		Directory.Build.props = Directory.Build.props
 		..\Readme.md = ..\Readme.md
 		..\version.props = ..\version.props
@@ -16,6 +15,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseGatherer.Core.Tests", "LicenseGatherer.Core.Tests\LicenseGatherer.Core.Tests.csproj", "{388146D1-17ED-4A40-A279-B68333348A66}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseGatherer", "LicenseGatherer\LicenseGatherer.csproj", "{34120666-7773-4E6D-91C8-20E5834D4DF9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{77AA91BF-A3AE-4D92-A5C7-26B54F3642A7}"
+	ProjectSection(SolutionItems) = preProject
+		..\eng\azure-pipelines\base.yml = ..\eng\azure-pipelines\base.yml
+		..\eng\azure-pipelines\master.yml = ..\eng\azure-pipelines\master.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +71,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{77AA91BF-A3AE-4D92-A5C7-26B54F3642A7} = {C46EB8D8-9BDF-4B8A-BDCB-76DE1D91B44B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F3A1F1B5-BF2B-4383-9A80-8F2369CC5C20}
