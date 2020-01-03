@@ -28,22 +28,25 @@ stages:
                     packagesToPush: '$(Pipeline.Workspace)/NuGetPackages/ci/*.nupkg'
                     nuGetFeedType: 'internal'
                     publishVstsFeed: $(Azure.Artifacts.Id)
-  # - stage: Production
-  #   dependsOn: Staging
-  #   condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
-  #   jobs:
-  #     - job: PushToNugetOrg
-  #       steps:
-  #         - checkout: none
-  #         - task: DownloadPipelineArtifact@2
-  #           inputs:
-  #             buildType: 'current'
-  #             artifactName: 'NuGetPackages'
-  #             itemPattern: '/master/**'
-  #             targetPath: '$(Pipeline.Workspace)'
-  #         - task: DotNetCoreCLI@2
-  #           inputs:
-  #             command: 'push'
-  #             packagesToPush: '$(Pipeline.Workspace)/*.nupkg'
-  #             nuGetFeedType: 'external'
-  #             publishFeedCredentials: 'NuGet.LicenseGatherer'
+  - stage: Production
+    dependsOn: Staging
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    jobs:
+      - deployment: PushToNuGetOrg
+        displayName: Push Master NuGet package to NuGet.org
+        pool:
+          vmImage: windows-2019
+        environment: LicenseGatherer-Production
+        strategy:
+          runOnce:
+            deploy:      
+              steps:
+                - download: current
+                  artifact: NuGetPackages
+                - task: DotNetCoreCLI@2
+                  displayName: 'Invoke dotnet nuget push'
+                  inputs:
+                    command: 'push'
+                    packagesToPush: '$(Pipeline.Workspace)/NuGetPackages/master/*.nupkg'
+                    nuGetFeedType: 'external'
+                    publishFeedCredentials: 'NuGet.LicenseGatherer'
