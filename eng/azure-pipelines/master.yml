@@ -6,7 +6,7 @@ pool:
 
 stages:
   - template: 'base.yml'
-  - stage: Push CI NuGet package to Preview Feed
+  - stage: Staging
     dependsOn: Build
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
     jobs:
@@ -24,8 +24,8 @@ stages:
             packagesToPush: '$(System.DefaultWorkingDirectory)/ci/*.nupkg'
             nuGetFeedType: 'internal'
             publishVstsFeed: $(Azure.Artifacts.Id)
-  - stage: Push Master NuGet package to NuGet.org Feed
-    dependsOn: Push CI NuGet package to Preview Feed
+  - stage: Production
+    dependsOn: Staging
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
     jobs:
       - job: PushToNugetOrg
