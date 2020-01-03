@@ -36,8 +36,6 @@ stages:
             projects: 'src/license-gatherer.sln'
             custom: 'pack'
             arguments: '--configuration ${{ parameters.BuildConfiguration }} --output $(Build.ArtifactStagingDirectory)/ci --no-build --version-suffix "ci.$(Build.SourceVersion)" --verbosity Detailed'
-        - task: PublishPipelineArtifact@1
-          inputs:
-            targetPath: '$(Build.Artifactstagingdirectory)'
-            artifact: 'NuGetPackages'
-            publishLocation: 'pipeline'
+        - publish: $(Build.ArtifactStagingDirectory)
+          displayName: 'Publish pipeline master and CI artifact'
+          artifact: NuGetPackages

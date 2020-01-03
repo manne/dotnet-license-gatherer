@@ -1,28 +1,30 @@
 trigger:
 - master
 
-pool:
-  vmImage: windows-2019
-
 stages:
   - template: 'base.yml'
   - stage: Staging
     dependsOn: Build
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
     jobs:
-    - job: PushToPreview
-      steps:
-        - checkout: none
-        - task: DownloadPipelineArtifact@2
-          inputs:
-            buildType: 'current'
-            artifactName: 'NuGetPackages'
-        - task: DotNetCoreCLI@2
-          inputs:
-            command: 'push'
-            packagesToPush: '$(Pipeline.Workspace)/ci/*.nupkg'
-            nuGetFeedType: 'internal'
-            publishVstsFeed: $(Azure.Artifacts.Id)
+      - deployment: PushToPreview
+        displayName: Push CI NuGet package to Internal Feed
+        pool:
+          vmImage: windows-2019
+        environment: LicenseGatherer-Staging
+        strategy:
+          runOnce:
+            deploy:      
+              steps:
+                - download: current
+                  artifact: NuGetPackages
+                - task: DotNetCoreCLI@2
+                  displayName: 'Invoke dotnet nuget push'
+                  inputs:
+                    command: 'push'
+                    packagesToPush: '$(Pipeline.Workspace)/ci/*.nupkg'
+                    nuGetFeedType: 'internal'
+                    publishVstsFeed: $(Azure.Artifacts.Id)
   # - stage: Production
   #   dependsOn: Staging
   #   condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
