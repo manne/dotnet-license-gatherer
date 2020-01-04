@@ -87,17 +87,8 @@ namespace LicenseGatherer.Core
 
         private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeFileInfo(IFileInfo projectFile)
         {
-            IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> result;
-            if (".sln".Equals(projectFile.Extension, StringComparison.OrdinalIgnoreCase))
-            {
-                result = AnalyzeSolutionFile(projectFile);
-            }
-            else
-            {
-                result = AnalyzeProjectFile(projectFile);
-            }
-
-            return result;
+            var isSolution = ".sln".Equals(projectFile.Extension, StringComparison.OrdinalIgnoreCase);
+            return isSolution ? AnalyzeSolutionFile(projectFile) : AnalyzeProjectFile(projectFile);
         }
 
         private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeSolutionFile(IFileInfo solutionFile)

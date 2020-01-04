@@ -19,6 +19,8 @@ using Newtonsoft.Json;
 using static System.FormattableString;
 
 using Environment = LicenseGatherer.Core.Environment;
+using IReporter = LicenseGatherer.Core.IReporter;
+using CommandLineUtils = McMaster.Extensions.CommandLineUtils;
 
 namespace LicenseGatherer
 {
@@ -29,6 +31,7 @@ namespace LicenseGatherer
         private readonly IFileSystem _fileSystem;
         private readonly ProjectDependencyResolver _projectDependencyResolver;
         private readonly LicenseDownloader _downloader;
+        private readonly IReporter _reporter;
 
         [Option(Description = "The path of the project or solution to gather the licenses. A directory can be specified, the value must end with \\, then for a solution in the working directory is searched. (optional)", LongName = "path", ShortName = "p", ShowInHelpText = true)]
         public string? PathToProjectOrSolution { get; set; }
@@ -59,11 +62,14 @@ namespace LicenseGatherer
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<UriCorrector>();
-                    services.AddSingleton<LicenseLocator>();
-                    services.AddSingleton<IFileSystem, FileSystem>();
-                    services.AddSingleton<IEnvironment, Environment>();
-                    services.AddSingleton<ProjectDependencyResolver>();
+                    services
+                        .AddSingleton<UriCorrector>()
+                        .AddSingleton<LicenseLocator>()
+                        .AddSingleton<IFileSystem, FileSystem>()
+                        .AddSingleton<IEnvironment, Environment>()
+                        .AddSingleton<ProjectDependencyResolver>()
+                        .AddSingleton<CommandLineUtils.IReporter, ConsoleReporter>()
+                        .AddSingleton<IReporter, Reporter>();
                     services.AddHttpClient<LicenseDownloader>();
                 })
                 .RunCommandLineApplicationAsync<Program>(args);
@@ -71,13 +77,14 @@ namespace LicenseGatherer
         }
 
         public Program(UriCorrector uriCorrector, LicenseLocator licenseLocator, IFileSystem fileSystem,
-            ProjectDependencyResolver projectDependencyResolver, LicenseDownloader licenseDownloader)
+            ProjectDependencyResolver projectDependencyResolver, LicenseDownloader licenseDownloader, IReporter reporter)
         {
             _uriCorrector = uriCorrector;
             _licenseLocator = licenseLocator;
             _fileSystem = fileSystem;
             _projectDependencyResolver = projectDependencyResolver;
             _downloader = licenseDownloader;
+            _reporter = reporter;
         }
 
         // ReSharper disable UnusedMember.Local
@@ -97,9 +104,7 @@ namespace LicenseGatherer
                 outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
                 if (outputFile.Exists)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    await Console.Out.WriteLineAsync("The file to write the output to already exists. Specify another output path or delete the file");
-                    Console.ResetColor();
+                    _reporter.Error("The file to write the output to already exists. Specify another output path or delete the file");
                     return 1;
                 }
             }
@@ -112,21 +117,21 @@ namespace LicenseGatherer
             var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
             MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
 
-            await Console.Out.WriteLineAsync("Resolving dependencies");
+            _reporter.Output("Resolving dependencies");
             var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
-            await Console.Out.WriteLineAsync(Invariant($"\tcount {dependencies.Count}"));
+            _reporter.Output(Invariant($"\tcount {dependencies.Count}"));
 
-            await Console.Out.WriteLineAsync("Extracting licensing information");
+            _reporter.Output("Extracting licensing information");
             var licenseSpecs = _licenseLocator.Provide(dependencies);
 
-            await Console.Out.WriteLineAsync("Correcting license locations");
+            _reporter.Output("Correcting license locations");
             var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Select(v => v.Item1).Distinct(EqualityComparer<Uri>.Default));
 
-            await Console.Out.WriteLineAsync(Invariant($"Downloading licenses (total {correctedLicenseLocations.Count})"));
+            _reporter.Output(Invariant($"Downloading licenses (total {correctedLicenseLocations.Count})"));
             IImmutableDictionary<Uri, string> licenses;
             if (SkipDownloadOfLicenses)
             {
-                await Console.Out.WriteLineAsync("\tSkipping download");
+                _reporter.Output("\tSkipping download");
                 licenses = ImmutableDictionary<Uri, string>.Empty;
             }
             else
@@ -157,10 +162,10 @@ namespace LicenseGatherer
             }
             else
             {
-                await Console.Out.WriteLineAsync(Invariant($"Licenses of {PathToProjectOrSolution}"));
+                _reporter.Output(Invariant($"Licenses of {PathToProjectOrSolution}"));
                 foreach (var dependencyInformation in licenseDependencyInformation)
                 {
-                    await Console.Out.WriteLineAsync(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version: {dependencyInformation.PackageReference.ResolvedVersion}, license expression: {dependencyInformation.LicenseExpression})"));
+                    _reporter.Output(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version: {dependencyInformation.PackageReference.ResolvedVersion}, license expression: {dependencyInformation.LicenseExpression})"));
                 }
             }
 
