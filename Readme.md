@@ -79,7 +79,7 @@ Contains an object of the type [NuGet.Versioning.NuGetVersion](https://github.co
 | IsLegacyVersion | boolean         | True if the NuGetVersion is using legacy behavior.                                 |
 | Revision        | integer         | Revision version R (x.y.z.R)                                                       |
 | IsSemVer2       | boolean         | Returns true if version is a SemVer 2.0.0 version                                  |
-| OriginalVersion |                 | Returns the original, non-normalized version string.                               |
+| OriginalVersion | string          | Returns the original, non-normalized version string.                               |
 | Major           | integer         | Major version X (X.y.z)                                                            |
 | Minor           | integer         | Minor version Y (x.Y.z)                                                            |
 | Patch           | integer         | Patch version Z (x.y.Z)                                                            |

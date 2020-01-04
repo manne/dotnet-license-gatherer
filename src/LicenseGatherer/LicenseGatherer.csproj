@@ -18,7 +18,7 @@
     <PackageOutputPath>./bin/</PackageOutputPath>
     <MinClientVersion>4.3.0</MinClientVersion>
     <Description>Gathers licenses of a project and/or solution as a JSON file.</Description>
-    <PackageTags>license compliance</PackageTags>
+    <PackageTags>license compliance licensing nuget msbuild</PackageTags>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
