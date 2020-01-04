@@ -28,7 +28,7 @@ namespace LicenseGatherer.Core
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(string projectOrSolutionPath)
+        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(string? projectOrSolutionPath)
         {
             IFileInfo file;
             bool searchDirectory;

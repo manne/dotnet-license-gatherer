@@ -24,10 +24,17 @@ dotnet tool install LicenseGatherer
 
 ## Usage
 
-The tool has got these parameters:
+```text
+Usage: LicenseGatherer [options]
 
-* -p|--path: The project or solution file path for which the licenses should be gather (optional)
-* -o|--outputpath: The file path of the output. If the no value is specified then a compact output is printed into the console. (optional)
+Options:
+  -p|--path <PATH_TO_PROJECT_OR_SOLUTION>  The path of the project or solution to gather the licenses. A directory can be specified, the value
+                                           must end with \, then for a solution in the working directory is searched. (optional)
+  -o|--outputpath <OUTPUT_PATH>            The path of the JSON content output. If the no value is specified some information is printed into
+                                           the console. (optional)
+  -s|--skipdownload                        Skip the download of licenses
+  -?|-h|--help                             Show help information
+```
 
 ### JSON Output
 

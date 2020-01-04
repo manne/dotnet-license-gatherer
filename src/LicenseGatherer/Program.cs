@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -29,11 +30,14 @@ namespace LicenseGatherer
         private readonly ProjectDependencyResolver _projectDependencyResolver;
         private readonly LicenseDownloader _downloader;
 
-        [Option(Description = "The path of the project or solution to gather the licenses", LongName = "path", ShortName = "p", ShowInHelpText = true)]
-        public string PathToProjectOrSolution { get; set; }
+        [Option(Description = "The path of the project or solution to gather the licenses. A directory can be specified, the value must end with \\, then for a solution in the working directory is searched. (optional)", LongName = "path", ShortName = "p", ShowInHelpText = true)]
+        public string? PathToProjectOrSolution { get; set; }
 
-        [Option(Description = "The path of the json content output", LongName = "outputpath", ShortName = "o", ShowInHelpText = true)]
-        public string OutputPath { get; set; }
+        [Option(Description = "The path of the JSON content output. If the no value is specified some information is printed into the console. (optional)", LongName = "outputpath", ShortName = "o", ShowInHelpText = true)]
+        public string? OutputPath { get; set; }
+
+        [Option(Description = "Skip the download of licenses", LongName = "skipdownload", ShortName = "s", ShowInHelpText = true)]
+        public bool SkipDownloadOfLicenses { get; set; }
 
         public static async Task<int> Main(string[] args)
         {
@@ -82,6 +86,11 @@ namespace LicenseGatherer
 #pragma warning restore IDE0051 // Remove unused private members
         // ReSharper restore UnusedMember.Local
         {
+            if (OutputPath is null)
+            {
+                SkipDownloadOfLicenses = true;
+            }
+
             IFileInfo? outputFile;
             if (OutputPath != null)
             {
@@ -105,6 +114,7 @@ namespace LicenseGatherer
 
             await Console.Out.WriteLineAsync("Resolving dependencies");
             var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
+            await Console.Out.WriteLineAsync(Invariant($"\tcount {dependencies.Count}"));
 
             await Console.Out.WriteLineAsync("Extracting licensing information");
             var licenseSpecs = _licenseLocator.Provide(dependencies);
@@ -113,15 +123,24 @@ namespace LicenseGatherer
             var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Select(v => v.Item1).Distinct(EqualityComparer<Uri>.Default));
 
             await Console.Out.WriteLineAsync(Invariant($"Downloading licenses (total {correctedLicenseLocations.Count})"));
-            var licenses = await _downloader.DownloadAsync(correctedLicenseLocations.Values.Select(v => v.corrected), cancellationToken);
+            IImmutableDictionary<Uri, string> licenses;
+            if (SkipDownloadOfLicenses)
+            {
+                await Console.Out.WriteLineAsync("\tSkipping download");
+                licenses = ImmutableDictionary<Uri, string>.Empty;
+            }
+            else
+            {
+                licenses = await _downloader.DownloadAsync(correctedLicenseLocations.Values.Select(v => v.corrected), cancellationToken);
+            }
 
             var licenseDependencyInformation = new List<LicenseDependencyInformation>();
 
-            foreach (var (package, (location, license)) in licenseSpecs)
+            foreach (var (package, (location, licenseExpression)) in licenseSpecs)
             {
                 var correctedUrl = correctedLicenseLocations[location].corrected;
-                var content = licenses.First(l => l.Key == correctedUrl);
-                var dependencyInformation = new LicenseDependencyInformation(package, content.Value, location, correctedUrl, license);
+                var content = licenses.FirstOrDefault(l => l.Key == correctedUrl);
+                var dependencyInformation = new LicenseDependencyInformation(package, content.Value ?? string.Empty, location, correctedUrl, licenseExpression);
 
                 licenseDependencyInformation.Add(dependencyInformation);
             }
@@ -141,7 +160,7 @@ namespace LicenseGatherer
                 await Console.Out.WriteLineAsync(Invariant($"Licenses of {PathToProjectOrSolution}"));
                 foreach (var dependencyInformation in licenseDependencyInformation)
                 {
-                    await Console.Out.WriteLineAsync(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version {dependencyInformation.PackageReference.ResolvedVersion})"));
+                    await Console.Out.WriteLineAsync(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version: {dependencyInformation.PackageReference.ResolvedVersion}, license expression: {dependencyInformation.LicenseExpression})"));
                 }
             }
 

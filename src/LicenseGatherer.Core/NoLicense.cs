@@ -15,5 +15,7 @@ namespace LicenseGatherer.Core
         {
             Type = LicenseExpressionType.License;
         }
+
+        public override string ToString() => "/";
     }
 }
