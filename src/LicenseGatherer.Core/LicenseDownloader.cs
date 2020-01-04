@@ -29,8 +29,12 @@ namespace LicenseGatherer.Core
                 string licenseContent;
                 using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, licenseLocation))
                 {
-                    var responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
-                    var rawLicenseText = await responseMessage.Content.ReadAsStringAsync();
+                    string rawLicenseText;
+                    using (var responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken))
+                    {
+                        rawLicenseText = await responseMessage.Content.ReadAsStringAsync();
+                    }
+
                     licenseContent = rawLicenseText;
                 }
 
