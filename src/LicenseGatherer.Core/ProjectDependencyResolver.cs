@@ -133,7 +133,7 @@ namespace LicenseGatherer.Core
                 try
                 {
                     _environment.CurrentDirectory = projectFile.DirectoryName;
-                    var projectCollection = new ProjectCollection();
+                    using var projectCollection = new ProjectCollection();
 
                     var project = new Project(xmlStream, null, null, projectCollection);
                     var relativePath = project.GetPropertyValue(projectAssetsPropertyName);

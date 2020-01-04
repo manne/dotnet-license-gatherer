@@ -49,6 +49,9 @@ One package has these properties
 | LicenseContent                        | string | The content of the license                                                           |
 | OriginalLicenseLocation               | string | The url of the given license.                                                        |
 | DownloadedLicenseLocation             | string | The corrected url of the license. E.g. It replaces the github url with the raw once. |
+| [LicenseExpression](#licenseexpression)                     | object | The license expression of the package                                                |
+
+#### LicenseExpression
 
 #### PackageReference
 

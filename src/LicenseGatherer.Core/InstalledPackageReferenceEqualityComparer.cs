@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace LicenseGatherer.Core
 {
@@ -18,7 +19,7 @@ namespace LicenseGatherer.Core
 
         public int GetHashCode(InstalledPackageReference co)
         {
-            return co.Name.GetHashCode() ^ co.ResolvedVersion.GetHashCode();
+            return HashCode.Combine(co.Name, co.ResolvedVersion);
         }
 
         public bool Equals(InstalledPackageReference x1, InstalledPackageReference x2)
