@@ -4,6 +4,18 @@ namespace LicenseGatherer.Core
 {
     public class InstalledPackageReferenceEqualityComparer : IEqualityComparer<InstalledPackageReference>
     {
+        static InstalledPackageReferenceEqualityComparer()
+        {
+            Instance = new InstalledPackageReferenceEqualityComparer();
+        }
+
+        private InstalledPackageReferenceEqualityComparer()
+        {
+            // do not expose constructor
+        }
+
+        public static InstalledPackageReferenceEqualityComparer Instance { get; }
+
         public int GetHashCode(InstalledPackageReference co)
         {
             return co.Name.GetHashCode() ^ co.ResolvedVersion.GetHashCode();

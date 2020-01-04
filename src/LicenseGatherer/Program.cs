@@ -49,7 +49,10 @@ namespace LicenseGatherer
                 })
                 .ConfigureLogging((context, logging) =>
                 {
-                    logging.AddConsole();
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        logging.AddConsole();
+                    }
                 })
                 .ConfigureServices(services =>
                 {
@@ -93,7 +96,7 @@ namespace LicenseGatherer
             await Console.Out.WriteLineAsync("Correcting license locations");
             var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Distinct(EqualityComparer<Uri>.Default));
 
-            await Console.Out.WriteLineAsync("Downloading licenses");
+            await Console.Out.WriteLineAsync(Invariant($"Downloading licenses (total {correctedLicenseLocations.Count})"));
             var licenses = await _downloader.DownloadAsync(correctedLicenseLocations.Values.Select(v => v.corrected), cancellationToken);
 
             var licenseDependencyInformation = new List<LicenseDependencyInformation>();
@@ -102,7 +105,9 @@ namespace LicenseGatherer
             {
                 var correctedUrl = correctedLicenseLocations[location].corrected;
                 var content = licenses.First(l => l.Key == correctedUrl);
-                var dependencyInformation = new LicenseDependencyInformation(package, content.Value, location, correctedUrl);
+                var localPackageInfo = dependencies[package];
+                var licenseExpression = localPackageInfo.Nuspec.GetLicenseMetadata().LicenseExpression;
+                var dependencyInformation = new LicenseDependencyInformation(package, content.Value, location, correctedUrl, licenseExpression);
 
                 licenseDependencyInformation.Add(dependencyInformation);
             }
@@ -112,7 +117,9 @@ namespace LicenseGatherer
                 var outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
                 if (outputFile.Exists)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     await Console.Out.WriteLineAsync("The file to write the output to already exists");
+                    Console.ResetColor();
                     return 1;
                 }
 

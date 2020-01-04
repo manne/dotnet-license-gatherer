@@ -57,14 +57,17 @@ namespace LicenseGatherer.Core
 
         private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeFileInfo(IFileInfo projectFile)
         {
+            IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> result;
             if (".sln".Equals(projectFile.Extension, StringComparison.OrdinalIgnoreCase))
             {
-                return AnalyzeSolutionFile(projectFile);
+                result = AnalyzeSolutionFile(projectFile);
             }
             else
             {
-                return AnalyzeProjectFile(projectFile);
+                result = AnalyzeProjectFile(projectFile);
             }
+
+            return result;
         }
 
         private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeSolutionFile(IFileInfo solutionFile)
@@ -136,7 +139,7 @@ namespace LicenseGatherer.Core
             var allReferencedPackages = lockFile.Targets.SelectMany(t => t.Libraries)
                 .Where(l => l.Type == "package")
                 .Select(p => new InstalledPackageReference(p.Name, p.Version));
-            var referencedPackages = allReferencedPackages.Distinct(new InstalledPackageReferenceEqualityComparer());
+            var referencedPackages = allReferencedPackages.Distinct(InstalledPackageReferenceEqualityComparer.Instance);
             var packageFolders = lockFile.PackageFolders;
             var localPackageInfos = new Dictionary<InstalledPackageReference, LocalPackageInfo>();
             foreach (var referencedPackage in referencedPackages)
@@ -148,7 +151,7 @@ namespace LicenseGatherer.Core
             return ImmutableDictionary.CreateRange(localPackageInfos);
         }
 
-        private LocalPackageInfo GetPackageInfo(InstalledPackageReference packageReference, IEnumerable<LockFileItem> folders)
+        private static LocalPackageInfo GetPackageInfo(InstalledPackageReference packageReference, IEnumerable<LockFileItem> folders)
         {
             var packageIdentity = new NuGet.Packaging.Core.PackageIdentity(packageReference.Name, packageReference.ResolvedVersion);
             foreach (var folder in folders)
