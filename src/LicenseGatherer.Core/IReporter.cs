@@ -1,4 +1,6 @@
-﻿namespace LicenseGatherer.Core
+﻿using System;
+
+namespace LicenseGatherer.Core
 {
     /// <summary>
     /// Gathers messages with levels.
@@ -6,16 +8,16 @@
     public interface IReporter
     {
         /// <summary>
-        /// Report a verbose message.
+        /// Report console output.
         /// </summary>
         /// <param name="message"></param>
-        void Verbose(string message);
+        void Output(string message);
 
         /// <summary>
         /// Report console output.
         /// </summary>
         /// <param name="message"></param>
-        void Output(string message);
+        void OutputInvariant(FormattableString message);
 
         /// <summary>
         /// Report an error.

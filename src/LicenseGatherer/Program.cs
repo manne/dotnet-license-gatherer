@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+
 using static System.FormattableString;
 
 using Environment = LicenseGatherer.Core.Environment;
@@ -119,7 +120,7 @@ namespace LicenseGatherer
 
             _reporter.Output("Resolving dependencies");
             var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
-            _reporter.Output(Invariant($"\tcount {dependencies.Count}"));
+            _reporter.OutputInvariant($"\tcount {dependencies.Count}");
 
             _reporter.Output("Extracting licensing information");
             var licenseSpecs = _licenseLocator.Provide(dependencies);
@@ -127,7 +128,7 @@ namespace LicenseGatherer
             _reporter.Output("Correcting license locations");
             var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Select(v => v.Item1).Distinct(EqualityComparer<Uri>.Default));
 
-            _reporter.Output(Invariant($"Downloading licenses (total {correctedLicenseLocations.Count})"));
+            _reporter.OutputInvariant($"Downloading licenses (total {correctedLicenseLocations.Count})");
             IImmutableDictionary<Uri, string> licenses;
             if (SkipDownloadOfLicenses)
             {
@@ -162,10 +163,10 @@ namespace LicenseGatherer
             }
             else
             {
-                _reporter.Output(Invariant($"Licenses of {PathToProjectOrSolution}"));
+                _reporter.OutputInvariant($"Licenses of {PathToProjectOrSolution}");
                 foreach (var dependencyInformation in licenseDependencyInformation)
                 {
-                    _reporter.Output(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version: {dependencyInformation.PackageReference.ResolvedVersion}, license expression: {dependencyInformation.LicenseExpression})"));
+                    _reporter.OutputInvariant($"dependency {dependencyInformation.PackageReference.Name} (version: {dependencyInformation.PackageReference.ResolvedVersion}, license expression: {dependencyInformation.LicenseExpression})");
                 }
             }
 

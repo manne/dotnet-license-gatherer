@@ -1,4 +1,5 @@
-﻿using LicenseGatherer.Core;
+﻿using System;
+using LicenseGatherer.Core;
 
 namespace LicenseGatherer
 {
@@ -11,14 +12,14 @@ namespace LicenseGatherer
             _reporter = reporter;
         }
 
-        public void Verbose(string message)
-        {
-            _reporter.Verbose(message);
-        }
-
         public void Output(string message)
         {
             _reporter.Output(message);
+        }
+
+        public void OutputInvariant(FormattableString message)
+        {
+            Output(FormattableString.Invariant(message));
         }
 
         public void Error(string message)
