@@ -1,5 +1,11 @@
 trigger:
-- master
+  branches:
+    include:
+      - master 
+  paths:
+    exclude:
+      - Docs/*
+      - Readme.md
 
 pool:
   vmImage: windows-2019
