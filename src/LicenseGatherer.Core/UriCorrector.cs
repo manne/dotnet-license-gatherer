@@ -23,8 +23,8 @@ namespace LicenseGatherer.Core
             {
                 foreach (var location in licenseLocations)
                 {
-                    Uri correctedLocation = null;
-                    bool wasCorrected = false;
+                    Uri? correctedLocation = null;
+                    bool wasCorrected;
                     if (location == null)
                     {
                         _logger.LogInformation("no uri");
@@ -43,6 +43,14 @@ namespace LicenseGatherer.Core
 
                             _logger.LogInformation("Corrected url from {SourceLicenseUrl} to {TargetLicenseUrl}", location, correctedLocation);
                         }
+                        else
+                        {
+                            wasCorrected = false;
+                        }
+                    }
+                    else
+                    {
+                        wasCorrected = false;
                     }
 
                     if (!wasCorrected)
@@ -50,7 +58,7 @@ namespace LicenseGatherer.Core
                         correctedLocation = location;
                     }
 
-                    result.Add(location, (correctedLocation, wasCorrected));
+                    result.Add(location, (correctedLocation!, wasCorrected));
                 }
             }
 

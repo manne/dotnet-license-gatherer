@@ -28,7 +28,7 @@ namespace LicenseGatherer.Core
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> ResolveDependencies(string projectOrSolutionPath)
+        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(string projectOrSolutionPath)
         {
             if (!_fileSystem.File.Exists(projectOrSolutionPath))
             {
@@ -55,9 +55,9 @@ namespace LicenseGatherer.Core
             return AnalyzeFileInfo(_fileSystem.FileInfo.FromFileName(projectOrSolutionPath));
         }
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeFileInfo(IFileInfo projectFile)
+        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeFileInfo(IFileInfo projectFile)
         {
-            IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> result;
+            IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> result;
             if (".sln".Equals(projectFile.Extension, StringComparison.OrdinalIgnoreCase))
             {
                 result = AnalyzeSolutionFile(projectFile);
@@ -70,12 +70,12 @@ namespace LicenseGatherer.Core
             return result;
         }
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeSolutionFile(IFileInfo solutionFile)
+        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeSolutionFile(IFileInfo solutionFile)
         {
             var solution = SolutionFile.Parse(solutionFile.FullName);
             var projects = solution.ProjectsInOrder;
             var fileSystem = solutionFile.FileSystem;
-            var result = new List<KeyValuePair<InstalledPackageReference, LocalPackageInfo>>();
+            var result = new List<KeyValuePair<InstalledPackageReference, LocalPackageInfo?>>();
             foreach (var project in projects)
             {
                 if (project.ProjectType == SolutionProjectType.SolutionFolder)
@@ -91,19 +91,17 @@ namespace LicenseGatherer.Core
             return ImmutableDictionary.CreateRange(result);
         }
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> AnalyzeProjectFile(IFileInfo projectFile)
+        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeProjectFile(IFileInfo projectFile)
         {
             const string projectAssetsPropertyName = "ProjectAssetsFile";
 
             string assetFileLocation;
             using (var stream = projectFile.OpenText())
-            using (var xmlStream = XmlReader.Create(stream))
             {
-                string lastCurrentDirectory = null;
-
+                using var xmlStream = XmlReader.Create(stream);
+                var lastCurrentDirectory = _environment.CurrentDirectory;
                 try
                 {
-                    lastCurrentDirectory = _environment.CurrentDirectory;
                     _environment.CurrentDirectory = projectFile.DirectoryName;
                     var projectCollection = new ProjectCollection();
 
@@ -141,7 +139,7 @@ namespace LicenseGatherer.Core
                 .Select(p => new InstalledPackageReference(p.Name, p.Version));
             var referencedPackages = allReferencedPackages.Distinct(InstalledPackageReferenceEqualityComparer.Instance);
             var packageFolders = lockFile.PackageFolders;
-            var localPackageInfos = new Dictionary<InstalledPackageReference, LocalPackageInfo>();
+            var localPackageInfos = new Dictionary<InstalledPackageReference, LocalPackageInfo?>();
             foreach (var referencedPackage in referencedPackages)
             {
                 var packageInfo = GetPackageInfo(referencedPackage, packageFolders);
@@ -151,7 +149,7 @@ namespace LicenseGatherer.Core
             return ImmutableDictionary.CreateRange(localPackageInfos);
         }
 
-        private static LocalPackageInfo GetPackageInfo(InstalledPackageReference packageReference, IEnumerable<LockFileItem> folders)
+        private static LocalPackageInfo? GetPackageInfo(InstalledPackageReference packageReference, IEnumerable<LockFileItem> folders)
         {
             var packageIdentity = new NuGet.Packaging.Core.PackageIdentity(packageReference.Name, packageReference.ResolvedVersion);
             foreach (var folder in folders)

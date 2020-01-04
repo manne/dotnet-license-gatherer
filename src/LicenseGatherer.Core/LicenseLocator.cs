@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
 
 namespace LicenseGatherer.Core
@@ -16,25 +17,28 @@ namespace LicenseGatherer.Core
             _logger = logger;
         }
 
-        public IImmutableDictionary<InstalledPackageReference, Uri> Provide(IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> packages)
+        public IImmutableDictionary<InstalledPackageReference, (Uri, NuGetLicenseExpression)> Provide(IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> packages)
         {
-            var result = new Dictionary<InstalledPackageReference, Uri>(packages.Count);
+            var result = new Dictionary<InstalledPackageReference, (Uri, NuGetLicenseExpression)>(packages.Count);
             foreach (var (installedPackageReference, localPackageInfo) in packages)
             {
-                Uri licenseSource;
+                Uri? licenseSource;
                 if (localPackageInfo is null)
                 {
                     continue;
                 }
 
+                NuGetLicenseExpression license;
                 Debug.Assert(localPackageInfo.Nuspec != null);
                 var licenseMetadata = localPackageInfo.Nuspec.GetLicenseMetadata();
                 if (licenseMetadata != null)
                 {
+                    license = licenseMetadata.LicenseExpression ?? NoLicense.Instance;
                     licenseSource = licenseMetadata.LicenseUrl;
                 }
                 else
                 {
+                    license = NoLicense.Instance;
                     var temp = localPackageInfo.Nuspec.GetLicenseUrl();
                     licenseSource = temp != null ? new Uri(temp) : null;
                 }
@@ -45,7 +49,7 @@ namespace LicenseGatherer.Core
                     continue;
                 }
 
-                result.Add(installedPackageReference, licenseSource);
+                result.Add(installedPackageReference, (licenseSource, license));
             }
 
             return ImmutableDictionary.CreateRange(result);

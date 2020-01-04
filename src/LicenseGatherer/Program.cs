@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-
 using static System.FormattableString;
 
 using Environment = LicenseGatherer.Core.Environment;
@@ -83,7 +82,7 @@ namespace LicenseGatherer
 #pragma warning restore IDE0051 // Remove unused private members
         // ReSharper restore UnusedMember.Local
         {
-            IFileInfo outputFile;
+            IFileInfo? outputFile;
             if (OutputPath != null)
             {
                 outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
@@ -111,20 +110,18 @@ namespace LicenseGatherer
             var licenseSpecs = _licenseLocator.Provide(dependencies);
 
             await Console.Out.WriteLineAsync("Correcting license locations");
-            var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Distinct(EqualityComparer<Uri>.Default));
+            var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Select(v => v.Item1).Distinct(EqualityComparer<Uri>.Default));
 
             await Console.Out.WriteLineAsync(Invariant($"Downloading licenses (total {correctedLicenseLocations.Count})"));
             var licenses = await _downloader.DownloadAsync(correctedLicenseLocations.Values.Select(v => v.corrected), cancellationToken);
 
             var licenseDependencyInformation = new List<LicenseDependencyInformation>();
 
-            foreach (var (package, location) in licenseSpecs)
+            foreach (var (package, (location, license)) in licenseSpecs)
             {
                 var correctedUrl = correctedLicenseLocations[location].corrected;
                 var content = licenses.First(l => l.Key == correctedUrl);
-                var localPackageInfo = dependencies[package];
-                var licenseExpression = localPackageInfo.Nuspec.GetLicenseMetadata().LicenseExpression;
-                var dependencyInformation = new LicenseDependencyInformation(package, content.Value, location, correctedUrl, licenseExpression);
+                var dependencyInformation = new LicenseDependencyInformation(package, content.Value, location, correctedUrl, license);
 
                 licenseDependencyInformation.Add(dependencyInformation);
             }
@@ -133,13 +130,11 @@ namespace LicenseGatherer
             {
                 var fileContent = JsonConvert.SerializeObject(licenseDependencyInformation, Formatting.Indented);
 
-                using (var writer = outputFile.OpenWrite())
-                {
-                    var encoding = new UTF8Encoding(false, true);
-                    var bytes = encoding.GetBytes(fileContent);
-                    await writer.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
-                    await writer.FlushAsync(cancellationToken);
-                }
+                await using var writer = outputFile.OpenWrite();
+                var encoding = new UTF8Encoding(false, true);
+                var bytes = encoding.GetBytes(fileContent);
+                await writer.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
+                await writer.FlushAsync(cancellationToken);
             }
             else
             {
