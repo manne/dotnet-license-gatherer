@@ -83,6 +83,23 @@ namespace LicenseGatherer
 #pragma warning restore IDE0051 // Remove unused private members
         // ReSharper restore UnusedMember.Local
         {
+            IFileInfo outputFile;
+            if (OutputPath != null)
+            {
+                outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
+                if (outputFile.Exists)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    await Console.Out.WriteLineAsync("The file to write the output to already exists. Specify another output path or delete the file");
+                    Console.ResetColor();
+                    return 1;
+                }
+            }
+            else
+            {
+                outputFile = null;
+            }
+
             var cancellationToken = CancellationToken.None;
             var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
             MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
@@ -112,17 +129,8 @@ namespace LicenseGatherer
                 licenseDependencyInformation.Add(dependencyInformation);
             }
 
-            if (OutputPath != null)
+            if (outputFile != null)
             {
-                var outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
-                if (outputFile.Exists)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    await Console.Out.WriteLineAsync("The file to write the output to already exists");
-                    Console.ResetColor();
-                    return 1;
-                }
-
                 var fileContent = JsonConvert.SerializeObject(licenseDependencyInformation, Formatting.Indented);
 
                 using (var writer = outputFile.OpenWrite())
@@ -143,15 +151,6 @@ namespace LicenseGatherer
             }
 
             return 0;
-        }
-    }
-
-    public static class Extensions
-    {
-        public static void Deconstruct<T1, T2>(this KeyValuePair<T1, T2> tuple, out T1 key, out T2 value)
-        {
-            key = tuple.Key;
-            value = tuple.Value;
         }
     }
 }
