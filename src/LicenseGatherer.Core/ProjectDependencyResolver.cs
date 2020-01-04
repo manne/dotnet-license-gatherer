@@ -105,7 +105,7 @@ namespace LicenseGatherer.Core
             var solution = SolutionFile.Parse(solutionFile.FullName);
             var projects = solution.ProjectsInOrder;
             var fileSystem = solutionFile.FileSystem;
-            var result = new List<KeyValuePair<InstalledPackageReference, LocalPackageInfo?>>();
+            var result = new Dictionary<InstalledPackageReference, LocalPackageInfo?>(InstalledPackageReferenceEqualityComparer.Instance);
             foreach (var project in projects)
             {
                 if (project.ProjectType == SolutionProjectType.SolutionFolder)
@@ -115,10 +115,10 @@ namespace LicenseGatherer.Core
 
                 var projectFile = fileSystem.FileInfo.FromFileName(project.AbsolutePath);
                 var info = AnalyzeProjectFile(projectFile);
-                result.AddRange(info);
+                result.SafeAddRange(info);
             }
 
-            return ImmutableDictionary.CreateRange(result);
+            return ImmutableDictionary.CreateRange(InstalledPackageReferenceEqualityComparer.Instance, result);
         }
 
         private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeProjectFile(IFileInfo projectFile)
