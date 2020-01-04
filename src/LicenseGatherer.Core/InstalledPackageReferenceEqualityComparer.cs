@@ -5,17 +5,12 @@ namespace LicenseGatherer.Core
 {
     public class InstalledPackageReferenceEqualityComparer : IEqualityComparer<InstalledPackageReference>
     {
-        static InstalledPackageReferenceEqualityComparer()
-        {
-            Instance = new InstalledPackageReferenceEqualityComparer();
-        }
-
         private InstalledPackageReferenceEqualityComparer()
         {
             // do not expose constructor
         }
 
-        public static InstalledPackageReferenceEqualityComparer Instance { get; }
+        public static InstalledPackageReferenceEqualityComparer Instance { get; } = new InstalledPackageReferenceEqualityComparer();
 
         public int GetHashCode(InstalledPackageReference co)
         {
