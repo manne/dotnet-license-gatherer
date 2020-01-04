@@ -29,10 +29,10 @@ namespace LicenseGatherer
         private readonly ProjectDependencyResolver _projectDependencyResolver;
         private readonly LicenseDownloader _downloader;
 
-        [Option(Description = "The path of the project or solution to gather the licenses", LongName = "path", ShortName = "p")]
+        [Option(Description = "The path of the project or solution to gather the licenses", LongName = "path", ShortName = "p", ShowInHelpText = true)]
         public string PathToProjectOrSolution { get; set; }
 
-        [Option(Description = "The path of the json content output", LongName = "outputpath", ShortName = "o")]
+        [Option(Description = "The path of the json content output", LongName = "outputpath", ShortName = "o", ShowInHelpText = true)]
         public string OutputPath { get; set; }
 
         public static async Task<int> Main(string[] args)

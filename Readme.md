@@ -24,35 +24,12 @@ dotnet tool install LicenseGatherer
 
 ## Usage
 
-### Project
+The tool has got these parameters:
 
-From **global** tool
+* -p|--path: The project or solution file path for which the licenses should be gather (optional)
+* -o|--outputpath: The file path of the output. If the no value is specified then a compact output is printed into the console. (optional)
 
-```batch
-license-gatherer -p c:\your\path\to\the\projectfile.csproj -o licenses.json
-```
-
-From **local** tool
-
-```batch
-dotnet tool run license-gatherer -p c:\your\path\to\the\projectfile.csproj -o licenses.json
-```
-
-### Solution
-
-From **global** tool
-
-```batch
-license-gatherer -p c:\your\path\to\the\solutionfile.sln -o licenses.json
-```
-
-From **local** tool
-
-```batch
-dotnet tool run license-gatherer -p c:\your\path\to\the\solutionfile.sln -o licenses.json
-```
-
-### Output
+### JSON Output
 
 The generated JSON file consists of the following schema:
 

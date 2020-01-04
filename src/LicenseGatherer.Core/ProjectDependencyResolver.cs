@@ -30,7 +30,37 @@ namespace LicenseGatherer.Core
 
         public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(string projectOrSolutionPath)
         {
-            if (!_fileSystem.File.Exists(projectOrSolutionPath))
+            IFileInfo file;
+            bool searchDirectory;
+            if (projectOrSolutionPath is null)
+            {
+                searchDirectory = true;
+                projectOrSolutionPath = _fileSystem.Directory.GetCurrentDirectory();
+            }
+            else
+            {
+                var lastCharacter = projectOrSolutionPath.TrimEnd().Last();
+                if (lastCharacter == _fileSystem.Path.AltDirectorySeparatorChar || lastCharacter == _fileSystem.Path.DirectorySeparatorChar)
+                {
+                    searchDirectory = true;
+                }
+                else
+                {
+                    searchDirectory = false;
+                }
+            }
+
+            if (!searchDirectory)
+            {
+                var fromFileName = _fileSystem.FileInfo.FromFileName(projectOrSolutionPath);
+                if (!fromFileName.Exists)
+                {
+                    throw new FileNotFoundException("The file does not exist", projectOrSolutionPath);
+                }
+
+                file = fromFileName;
+            }
+            else
             {
                 var directory = _fileSystem.DirectoryInfo.FromDirectoryName(projectOrSolutionPath);
                 if (!directory.Exists)
@@ -49,10 +79,10 @@ namespace LicenseGatherer.Core
                     throw new InvalidOperationException(Invariant($"The directory {directory.FullName} does have more than one solution file. Please specify the solution."));
                 }
 
-                throw new FileNotFoundException("The file does not exist", projectOrSolutionPath);
+                file = solutionFiles[0];
             }
 
-            return AnalyzeFileInfo(_fileSystem.FileInfo.FromFileName(projectOrSolutionPath));
+            return AnalyzeFileInfo(file);
         }
 
         private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeFileInfo(IFileInfo projectFile)
