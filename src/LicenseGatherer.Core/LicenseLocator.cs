@@ -19,33 +19,33 @@ namespace LicenseGatherer.Core
         public IImmutableDictionary<InstalledPackageReference, Uri> Provide(IImmutableDictionary<InstalledPackageReference, LocalPackageInfo> packages)
         {
             var result = new Dictionary<InstalledPackageReference, Uri>(packages.Count);
-            foreach (var package in packages)
+            foreach (var (installedPackageReference, localPackageInfo) in packages)
             {
                 Uri licenseSource;
-                if (package.Value == null)
+                if (localPackageInfo is null)
                 {
                     continue;
                 }
 
-                Debug.Assert(package.Value.Nuspec != null);
-                var licenseMetadata = package.Value.Nuspec.GetLicenseMetadata();
+                Debug.Assert(localPackageInfo.Nuspec != null);
+                var licenseMetadata = localPackageInfo.Nuspec.GetLicenseMetadata();
                 if (licenseMetadata != null)
                 {
                     licenseSource = licenseMetadata.LicenseUrl;
                 }
                 else
                 {
-                    var temp = package.Value.Nuspec.GetLicenseUrl();
+                    var temp = localPackageInfo.Nuspec.GetLicenseUrl();
                     licenseSource = temp != null ? new Uri(temp) : null;
                 }
 
-                if (licenseSource == null)
+                if (licenseSource is null)
                 {
-                    _logger.LogInformation("No license source provided for {Package}", package.Value.Identity);
+                    _logger.LogInformation("No license source provided for {Package}", localPackageInfo.Identity);
                     continue;
                 }
 
-                result.Add(package.Key, licenseSource);
+                result.Add(installedPackageReference, licenseSource);
             }
 
             return ImmutableDictionary.CreateRange(result);
