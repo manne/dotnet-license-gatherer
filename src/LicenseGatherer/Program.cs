@@ -30,10 +30,10 @@ namespace LicenseGatherer
         private readonly ProjectDependencyResolver _projectDependencyResolver;
         private readonly LicenseDownloader _downloader;
 
-        [Option(Description = "The subject", LongName = "path", ShortName = "p")]
+        [Option(Description = "The path of the project or solution to gather the licenses", LongName = "path", ShortName = "p")]
         public string PathToProjectOrSolution { get; set; }
 
-        [Option(Description = "The subject", LongName = "outputpath", ShortName = "o")]
+        [Option(Description = "The path of the json content output", LongName = "outputpath", ShortName = "o")]
         public string OutputPath { get; set; }
 
         public static async Task<int> Main(string[] args)
@@ -49,7 +49,6 @@ namespace LicenseGatherer
                 })
                 .ConfigureLogging((context, logging) =>
                 {
-                    logging.SetMinimumLevel(LogLevel.Information);
                     logging.AddConsole();
                 })
                 .ConfigureServices(services =>
@@ -85,16 +84,16 @@ namespace LicenseGatherer
             var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
             MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
 
-            Console.WriteLine("Resolving dependencies");
+            await Console.Out.WriteLineAsync("Resolving dependencies");
             var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
 
-            Console.WriteLine("Extracting licensing information");
+            await Console.Out.WriteLineAsync("Extracting licensing information");
             var licenseSpecs = _licenseLocator.Provide(dependencies);
 
-            Console.WriteLine("Correcting license locations");
+            await Console.Out.WriteLineAsync("Correcting license locations");
             var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Distinct(EqualityComparer<Uri>.Default));
 
-            Console.WriteLine("Downloading licenses");
+            await Console.Out.WriteLineAsync("Downloading licenses");
             var licenses = await _downloader.DownloadAsync(correctedLicenseLocations.Values.Select(v => v.corrected), cancellationToken);
 
             var licenseDependencyInformation = new List<LicenseDependencyInformation>();
@@ -113,7 +112,7 @@ namespace LicenseGatherer
                 var outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
                 if (outputFile.Exists)
                 {
-                    Console.WriteLine("The file to write the output to already exists");
+                    await Console.Out.WriteLineAsync("The file to write the output to already exists");
                     return 1;
                 }
 
@@ -124,14 +123,15 @@ namespace LicenseGatherer
                     var encoding = new UTF8Encoding(false, true);
                     var bytes = encoding.GetBytes(fileContent);
                     await writer.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
+                    await writer.FlushAsync(cancellationToken);
                 }
             }
             else
             {
-                Console.WriteLine(Invariant($"Licenses of {PathToProjectOrSolution}"));
+                await Console.Out.WriteLineAsync(Invariant($"Licenses of {PathToProjectOrSolution}"));
                 foreach (var dependencyInformation in licenseDependencyInformation)
                 {
-                    Console.WriteLine(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version {dependencyInformation.PackageReference.ResolvedVersion})"));
+                    await Console.Out.WriteLineAsync(Invariant($"dependency {dependencyInformation.PackageReference.Name} (version {dependencyInformation.PackageReference.ResolvedVersion})"));
                 }
             }
 
