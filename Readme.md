@@ -43,15 +43,24 @@ The generated JSON file consists of the following schema:
 An array of **package**s.
 One package has these properties
 
-| Name                                  | Type   | Explanation                                                                          |
-|---------------------------------------|--------|--------------------------------------------------------------------------------------|
-| [PackageReference](#packagereference) | object | An object containing information of the package                                      |
-| LicenseContent                        | string | The content of the license                                                           |
-| OriginalLicenseLocation               | string | The url of the given license.                                                        |
-| DownloadedLicenseLocation             | string | The corrected url of the license. E.g. It replaces the github url with the raw once. |
-| [LicenseExpression](#licenseexpression)                     | object | The license expression of the package                                                |
+| Name                                    | Type   | Explanation                                                                          |
+|-----------------------------------------|--------|--------------------------------------------------------------------------------------|
+| [PackageReference](#packagereference)   | object | An object containing information of the package                                      |
+| LicenseContent                          | string | The content of the license                                                           |
+| OriginalLicenseLocation                 | string | The url of the given license.                                                        |
+| DownloadedLicenseLocation               | string | The corrected url of the license. E.g. It replaces the github url with the raw once. |
+| [LicenseExpression](#licenseexpression) | object | The license expression of the package                                                |                                              |
 
 #### LicenseExpression
+
+Contains an object of the type [NuGet.Packaging.Licenses.NuGetLicense](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/Licenses/NuGetLicense.cs)
+
+| Name              | Type    | Explanation                                                                            |
+|-------------------|---------|----------------------------------------------------------------------------------------|
+| Identifier        | string  | The identifier according to [spdx](https://spdx.org/spdx-specification-21-web-version) |
+| Plus              | boolean | Signifies whether the plus operator has been specified on this license                 |
+| IsStandardLicense | boolean | Signifies whether this is a standard license known by the NuGet APIs                   |
+| Type              | integer | 0: License, 1: Operator                                                                |
 
 #### PackageReference
 
@@ -63,6 +72,28 @@ One package has these properties
 #### ResolvedVersion
 
 Contains an object of the type [NuGet.Versioning.NuGetVersion](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Versioning/NuGetVersion.cs).
+
+| Name            | Type            | Explanation                                                                        |
+|-----------------|-----------------|------------------------------------------------------------------------------------|
+| Version         | string          | A System.Version representation of the version without metadata or release labels. |
+| IsLegacyVersion | boolean         | True if the NuGetVersion is using legacy behavior.                                 |
+| Revision        | integer         | Revision version R (x.y.z.R)                                                       |
+| IsSemVer2       | boolean         | Returns true if version is a SemVer 2.0.0 version                                  |
+| OriginalVersion |                 | Returns the original, non-normalized version string.                               |
+| Major           | integer         | Major version X (X.y.z)                                                            |
+| Minor           | integer         | Minor version Y (x.Y.z)                                                            |
+| Patch           | integer         | Patch version Z (x.y.Z)                                                            |
+| ReleaseLabels   | array of string | A collection of pre-release labels attached to the version.                        |
+| Release         | string          | The full pre-release label for the version.                                        |
+| IsPrerelease    | boolean         | True if pre-release labels exist for the version.                                  |
+| HasMetadata     | boolean         | True if metadata exists for the version.                                           |
+| Metadata        | string          | Build metadata attached to the version.                                            |
+
+## Contribution
+
+* Create a fork and make a Pull Request
+* Submit a bug
+* Submit an idea
 
 ## License
 
