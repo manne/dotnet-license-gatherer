@@ -90,7 +90,7 @@ namespace LicenseGatherer
 
         // ReSharper disable UnusedMember.Local
 #pragma warning disable IDE0051 // Remove unused private members
-        private async Task<int> OnExecuteAsync()
+        private async Task<int> OnExecuteAsync(CancellationToken cancellationToken)
 #pragma warning restore IDE0051 // Remove unused private members
         // ReSharper restore UnusedMember.Local
         {
@@ -114,12 +114,11 @@ namespace LicenseGatherer
                 outputFile = null;
             }
 
-            var cancellationToken = CancellationToken.None;
             var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
             MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
 
-            _reporter.Output("Resolving dependencies");
-            var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
+            var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution, out var resolvedFile);
+            _reporter.OutputInvariant($"Resolving dependencies of {resolvedFile.FullName}");
             _reporter.OutputInvariant($"\tcount {dependencies.Count}");
 
             _reporter.Output("Extracting licensing information");
@@ -163,7 +162,7 @@ namespace LicenseGatherer
             }
             else
             {
-                _reporter.OutputInvariant($"Licenses of {PathToProjectOrSolution}");
+                _reporter.OutputInvariant($"Licenses:");
                 foreach (var dependencyInformation in licenseDependencyInformation)
                 {
                     _reporter.OutputInvariant($"dependency {dependencyInformation.PackageReference.Name} (version: {dependencyInformation.PackageReference.ResolvedVersion}, license expression: {dependencyInformation.LicenseExpression})");

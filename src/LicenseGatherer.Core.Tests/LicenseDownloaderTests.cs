@@ -24,7 +24,7 @@ namespace LicenseGatherer.Core.Tests
                 .Verifiable();
 
             var httpClient = mock.CreateClient();
-            var cut = new LicenseDownloader(httpClient);
+            var cut = new LicenseDownloader(httpClient, Mock.Of<IReporter>());
 
             // When
             _ = await cut.DownloadAsync(new[] { uri, uri }, CancellationToken.None);

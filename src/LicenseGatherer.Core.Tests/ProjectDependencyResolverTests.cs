@@ -26,7 +26,7 @@ namespace LicenseGatherer.Core.Tests
             var mockFileSystem = new MockFileSystem();
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\");
+            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\", out _);
             action.Should().Throw<DirectoryNotFoundException>();
         }
 
@@ -37,7 +37,7 @@ namespace LicenseGatherer.Core.Tests
             mockFileSystem.AddDirectory(@"c:\foo\bar");
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\aa.fooproj");
+            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\aa.fooproj", out _);
             action.Should().Throw<FileNotFoundException>();
         }
 
@@ -49,7 +49,7 @@ namespace LicenseGatherer.Core.Tests
             mockFileSystem.AddFile(@"c:\foo\bar\xyz.txt", new MockFileData(""));
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\");
+            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\", out _);
             action.Should().Throw<InvalidOperationException>();
         }
 
@@ -61,7 +61,7 @@ namespace LicenseGatherer.Core.Tests
             mockFileSystem.AddFile(@"c:\foo\bar\g.sln", new MockFileData(""));
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\");
+            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\", out _);
             action.Should().Throw<InvalidOperationException>();
         }
 
@@ -100,7 +100,7 @@ namespace LicenseGatherer.Core.Tests
 </Project>"));
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj");
+            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj", out _);
             action.Should().Throw<FileNotFoundException>().And.Message.Should().StartWith("The file does not exist");
         }
 
@@ -142,7 +142,7 @@ namespace LicenseGatherer.Core.Tests
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
             mockFileSystem.AddFile(@"c:\foo\bar\obj\project.assets.json", new MockFileData(""));
 
-           Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj");
+           Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj", out _);
             action.Should().NotThrow();
         }
 
@@ -183,7 +183,7 @@ namespace LicenseGatherer.Core.Tests
 
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj");
+            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj", out _);
             action.Should().Throw<FileNotFoundException>();
         }
     }
