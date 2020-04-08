@@ -1,6 +1,6 @@
 # LicenseGatherer
 
-[![Build Status](https://manne.visualstudio.com/public/_apis/build/status/manne.dotnet-license-gatherer?branchName=master)](https://manne.visualstudio.com/public/_build/latest?definitionId=1&branchName=master) [![Nuget](https://img.shields.io/nuget/v/LicenseGatherer?style=flat-square)](https://www.nuget.org/packages/LicenseGatherer/) [![GitHub License](https://img.shields.io/github/license/manne/dotnet-license-gatherer.svg?style=flat-square)](https://github.com/manne/dotnet-license-gatherer/blob/master/LICENSE.txt)
+[![Build Status](https://manne.visualstudio.com/public/_apis/build/status/manne.dotnet-license-gatherer?branchName=master&stageName=Build)](https://manne.visualstudio.com/public/_build/latest?definitionId=1&branchName=master) [![Nuget](https://img.shields.io/nuget/v/LicenseGatherer?style=flat-square)](https://www.nuget.org/packages/LicenseGatherer/) [![GitHub License](https://img.shields.io/github/license/manne/dotnet-license-gatherer.svg?style=flat-square)](https://github.com/manne/dotnet-license-gatherer/blob/master/LICENSE.txt)
 
 > LicenseGatherer provides license information from all transitive NuGet dependencies of your solution.
 
