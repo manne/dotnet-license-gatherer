@@ -41,15 +41,19 @@ Options:
 The generated JSON file consists of the following schema:
 
 An array of **package**s.
+
+#### Package
+
 One package has these properties
 
 | Name                                    | Type   | Explanation                                                                          |
 |-----------------------------------------|--------|--------------------------------------------------------------------------------------|
-| [PackageReference](#packagereference)   | object | An object containing information of the package                                      |
-| LicenseContent                          | string | The content of the license                                                           |
+| [PackageReference](#packagereference)   | object | An object containing information of the package.                                     |
+| LicenseContent                          | string | The content of the license.                                                          |
 | OriginalLicenseLocation                 | string | The url of the given license.                                                        |
 | DownloadedLicenseLocation               | string | The corrected url of the license. E.g. It replaces the github url with the raw once. |
-| [LicenseExpression](#licenseexpression) | object | The license expression of the package                                                |                                              |
+| [LicenseExpression](#licenseexpression) | object | The license expression of the package.                                               |
+| Authors                                 | string | The authors of the package.                                                          |
 
 #### LicenseExpression
 

@@ -20,51 +20,6 @@ namespace LicenseGatherer.Core.Tests
             }
         }
 
-        [Fact]
-        public void GivenOnePathToOneDirectory_WhenInThisDirectoryIsNotAnySolution_ThenOneDirectoryNotFoundException_ShouldBeThrown()
-        {
-            var mockFileSystem = new MockFileSystem();
-            var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
-
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\", out _);
-            action.Should().Throw<DirectoryNotFoundException>();
-        }
-
-        [Fact]
-        public void GivenOnePathToOneProjectFile_WhenInThisFileDoesNotExist_ThenOneDirectoryNotFoundException_ShouldBeThrown()
-        {
-            var mockFileSystem = new MockFileSystem();
-            mockFileSystem.AddDirectory(@"c:\foo\bar");
-            var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
-
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\aa.fooproj", out _);
-            action.Should().Throw<FileNotFoundException>();
-        }
-
-        [Fact]
-        public void GivenOnePathToOneDirectory_WhenInThisDirectoryDoesNotContainOneSolutionFile_ThenOneException_ShouldBeThrown()
-        {
-            var mockFileSystem = new MockFileSystem();
-            mockFileSystem.AddDirectory(@"c:\foo\bar");
-            mockFileSystem.AddFile(@"c:\foo\bar\xyz.txt", new MockFileData(""));
-            var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
-
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\", out _);
-            action.Should().Throw<InvalidOperationException>();
-        }
-
-        [Fact]
-        public void GivenOnePathToOneDirectory_WhenThisDirectoryContainsTwoSolutionFiles_ThenOneException_ShouldBeThrown()
-        {
-            var mockFileSystem = new MockFileSystem();
-            mockFileSystem.AddFile(@"c:\foo\bar\xyz.sln", new MockFileData(""));
-            mockFileSystem.AddFile(@"c:\foo\bar\g.sln", new MockFileData(""));
-            var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
-
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\", out _);
-            action.Should().Throw<InvalidOperationException>();
-        }
-
         [Fact(Skip = ".NET SDK is not found")]
         public void GivenOnePathToOneExistingProjectFile_WhenThisProjectDoesNotHaveOneProjectAssetsFileProperty_ThenOneException_ShouldBeThrown()
         {
@@ -98,9 +53,10 @@ namespace LicenseGatherer.Core.Tests
     <PackageReference Include=""Newtonsoft.Json"" Version=""12.0.1"" />
   </ItemGroup>
 </Project>"));
+            var entryPoint = new EntryPoint(mockFileSystem.FileInfo.FromFileName(@"c:\foo\bar\xyz.csproj"), EntryPointType.Project);
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj", out _);
+            Action action = () => cut.ResolveDependencies(entryPoint);
             action.Should().Throw<FileNotFoundException>().And.Message.Should().StartWith("The file does not exist");
         }
 
@@ -139,10 +95,11 @@ namespace LicenseGatherer.Core.Tests
   </ItemGroup>
 </Project>"));
 
+            var entryPoint = new EntryPoint(mockFileSystem.FileInfo.FromFileName(@"c:\foo\bar\xyz.csproj"), EntryPointType.Project);
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
             mockFileSystem.AddFile(@"c:\foo\bar\obj\project.assets.json", new MockFileData(""));
 
-           Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj", out _);
+           Action action = () => cut.ResolveDependencies(entryPoint);
             action.Should().NotThrow();
         }
 
@@ -180,10 +137,10 @@ namespace LicenseGatherer.Core.Tests
     <PackageReference Include=""Newtonsoft.Json"" Version=""12.0.1"" />
   </ItemGroup>
 </Project>"));
-
+            var entryPoint = new EntryPoint(mockFileSystem.FileInfo.FromFileName(@"c:\foo\bar\xyz.csproj"), EntryPointType.Project);
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(@"c:\foo\bar\xyz.csproj", out _);
+            Action action = () => cut.ResolveDependencies(entryPoint);
             action.Should().Throw<FileNotFoundException>();
         }
     }

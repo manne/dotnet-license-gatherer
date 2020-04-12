@@ -28,69 +28,13 @@ namespace LicenseGatherer.Core
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(string? projectOrSolutionPath, out IFileInfo resolvedFile)
-        {
-            IFileInfo file;
-            bool searchDirectory;
-            if (projectOrSolutionPath is null)
+        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(EntryPoint entryPoint)
+            => entryPoint.Type switch
             {
-                searchDirectory = true;
-                projectOrSolutionPath = _fileSystem.Directory.GetCurrentDirectory();
-            }
-            else
-            {
-                var lastCharacter = projectOrSolutionPath.TrimEnd().Last();
-                if (lastCharacter == _fileSystem.Path.AltDirectorySeparatorChar || lastCharacter == _fileSystem.Path.DirectorySeparatorChar)
-                {
-                    searchDirectory = true;
-                }
-                else
-                {
-                    searchDirectory = false;
-                }
-            }
-
-            if (!searchDirectory)
-            {
-                var fromFileName = _fileSystem.FileInfo.FromFileName(projectOrSolutionPath);
-                if (!fromFileName.Exists)
-                {
-                    throw new FileNotFoundException("The file does not exist", projectOrSolutionPath);
-                }
-
-                file = fromFileName;
-            }
-            else
-            {
-                var directory = _fileSystem.DirectoryInfo.FromDirectoryName(projectOrSolutionPath);
-                if (!directory.Exists)
-                {
-                    throw new DirectoryNotFoundException(Invariant($"The directory {projectOrSolutionPath} does not exist"));
-                }
-
-                var solutionFiles = directory.GetFiles("*.sln", SearchOption.TopDirectoryOnly);
-                if (solutionFiles.Length == 0)
-                {
-                    throw new InvalidOperationException(Invariant($"The directory {directory.FullName} does not have one solution file"));
-                }
-
-                if (solutionFiles.Length > 1)
-                {
-                    throw new InvalidOperationException(Invariant($"The directory {directory.FullName} does have more than one solution file. Please specify the solution."));
-                }
-
-                file = solutionFiles[0];
-            }
-
-            resolvedFile = file;
-            return AnalyzeFileInfo(file);
-        }
-
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeFileInfo(IFileInfo projectFile)
-        {
-            var isSolution = ".sln".Equals(projectFile.Extension, StringComparison.OrdinalIgnoreCase);
-            return isSolution ? AnalyzeSolutionFile(projectFile) : AnalyzeProjectFile(projectFile);
-        }
+                EntryPointType.Project => AnalyzeProjectFile(entryPoint.File),
+                EntryPointType.Solution => AnalyzeSolutionFile(entryPoint.File),
+                _ => throw new InvalidOperationException($"The entry point type {entryPoint.Type} is not supported.")
+            };
 
         private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeSolutionFile(IFileInfo solutionFile)
         {

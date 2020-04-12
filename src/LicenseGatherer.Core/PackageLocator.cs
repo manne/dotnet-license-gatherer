@@ -8,18 +8,18 @@ using NuGet.Protocol;
 
 namespace LicenseGatherer.Core
 {
-    public class LicenseLocator
+    public class PackageLocator
     {
-        private readonly ILogger<LicenseLocator> _logger;
+        private readonly ILogger<PackageLocator> _logger;
 
-        public LicenseLocator(ILogger<LicenseLocator> logger)
+        public PackageLocator(ILogger<PackageLocator> logger)
         {
             _logger = logger;
         }
 
-        public IImmutableDictionary<InstalledPackageReference, (Uri, NuGetLicenseExpression)> Provide(IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> packages)
+        public IImmutableDictionary<InstalledPackageReference, PackageInformation> Provide(IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> packages)
         {
-            var result = new Dictionary<InstalledPackageReference, (Uri, NuGetLicenseExpression)>(packages.Count);
+            var result = new Dictionary<InstalledPackageReference, PackageInformation>(packages.Count);
             foreach (var (installedPackageReference, localPackageInfo) in packages)
             {
                 Uri? licenseSource;
@@ -43,13 +43,15 @@ namespace LicenseGatherer.Core
                     licenseSource = temp != null ? new Uri(temp) : null;
                 }
 
+                var authors = localPackageInfo.Nuspec.GetAuthors() ?? "";
+
                 if (licenseSource is null)
                 {
                     _logger.LogInformation("No license source provided for {Package}", localPackageInfo.Identity);
-                    continue;
                 }
 
-                result.Add(installedPackageReference, (licenseSource, license));
+                var information = new PackageInformation(licenseSource, license, authors);
+                result.Add(installedPackageReference, information);
             }
 
             return ImmutableDictionary.CreateRange(result);
