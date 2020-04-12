@@ -2,12 +2,27 @@
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Xunit;
 
 namespace LicenseGatherer.Core.Tests
 {
     public class EntryPointLocatorTests
     {
+        [Fact]
+        public void GivenOnePathToOneSolution_WhenInThisSolutionDoesExist_ThenThisSolution_ShouldBeResolved()
+        {
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.AddFile(@"c:\foo\bar\xyz.sln", new MockFileData(""));
+            var cut = new EntryPointLocator(mockFileSystem);
+
+            var actualResult = cut.GetEntryPoint(@"c:\foo\bar\xyz.sln");
+            using (var _ = new AssertionScope())
+            {
+                actualResult.Type.Should().Be(EntryPointType.Solution);
+                actualResult.File.FullName.Should().Be(@"c:\foo\bar\xyz.sln");
+            }
+        }
 
         [Fact]
         public void GivenOnePathToOneDirectory_WhenInThisDirectoryIsNotAnySolution_ThenOneDirectoryNotFoundException_ShouldBeThrown()

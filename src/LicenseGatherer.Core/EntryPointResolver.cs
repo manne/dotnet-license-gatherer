@@ -52,8 +52,9 @@ namespace LicenseGatherer.Core
                     throw new FileNotFoundException("The file does not exist", projectOrSolutionPath);
                 }
 
+                entryPointType = fromFileName.Extension == ".sln" ? EntryPointType.Solution : EntryPointType.Project;
+
                 file = fromFileName;
-                entryPointType = EntryPointType.Project;
             }
             else
             {
