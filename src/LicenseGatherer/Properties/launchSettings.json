@@ -2,7 +2,7 @@
   "profiles": {
     "LicenseGatherer": {
       "commandName": "Project",
-      "commandLineArgs": "-p \"..\\..\\..\\..\\license-gatherer.sln\" -o \"licenses.json\""
+      "commandLineArgs": "-p C:\\Users\\manuel\\Documents\\GitHub\\manne_dotnet-license-gatherer\\src\\license-gatherer.sln"
     }
   }
 }
