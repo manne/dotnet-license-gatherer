@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.0.4 - 2020-04-13
+
 ### Added
 
 - Package information contains authors.
@@ -14,4 +16,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Package information can contain licenses which do not exist.
+- Package information contain licenses which do not exist.

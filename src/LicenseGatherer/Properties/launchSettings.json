@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "LicenseGatherer": {
-      "commandName": "Project",
-      "commandLineArgs": "-p C:\\Users\\manuel\\Documents\\GitHub\\manne_dotnet-license-gatherer\\src\\license-gatherer.sln"
-    }
-  }
-}
