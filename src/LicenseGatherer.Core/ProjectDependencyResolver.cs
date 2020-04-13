@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
@@ -28,15 +29,15 @@ namespace LicenseGatherer.Core
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(EntryPoint entryPoint)
+        public async Task<IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?>> ResolveDependenciesAsync(EntryPoint entryPoint)
             => entryPoint.Type switch
             {
-                EntryPointType.Project => AnalyzeProjectFile(entryPoint.File),
-                EntryPointType.Solution => AnalyzeSolutionFile(entryPoint.File),
+                EntryPointType.Project => await AnalyzeProjectFileAsync(entryPoint.File),
+                EntryPointType.Solution => await AnalyzeSolutionFileAsync(entryPoint.File),
                 _ => throw new InvalidOperationException($"The entry point type {entryPoint.Type} is not supported.")
             };
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeSolutionFile(IFileInfo solutionFile)
+        private async Task<IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?>> AnalyzeSolutionFileAsync(IFileInfo solutionFile)
         {
             var solution = SolutionFile.Parse(solutionFile.FullName);
             var projects = solution.ProjectsInOrder;
@@ -50,14 +51,14 @@ namespace LicenseGatherer.Core
                 }
 
                 var projectFile = fileSystem.FileInfo.FromFileName(project.AbsolutePath);
-                var info = AnalyzeProjectFile(projectFile);
+                var info = await AnalyzeProjectFileAsync(projectFile);
                 result.SafeAddRange(info);
             }
 
             return ImmutableDictionary.CreateRange(InstalledPackageReferenceEqualityComparer.Instance, result);
         }
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeProjectFile(IFileInfo projectFile)
+        private async Task<IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?>> AnalyzeProjectFileAsync(IFileInfo projectFile)
         {
             const string projectAssetsPropertyName = "ProjectAssetsFile";
 
@@ -68,7 +69,7 @@ namespace LicenseGatherer.Core
                 var lastCurrentDirectory = _environment.CurrentDirectory;
                 try
                 {
-                    _environment.CurrentDirectory = projectFile.DirectoryName;
+                    _environment.CurrentDirectory = _fileSystem.Path.GetDirectoryName(projectFile.FullName);
                     using var projectCollection = new ProjectCollection();
 
                     var project = new Project(xmlStream, null, null, projectCollection);
@@ -95,7 +96,7 @@ namespace LicenseGatherer.Core
             }
 
             LockFile lockFile;
-            using (var stream = assetFile.OpenText())
+            await using (var stream = assetFile.OpenRead())
             {
                 lockFile = new LockFileFormat().Read(stream, assetFile.FullName);
             }

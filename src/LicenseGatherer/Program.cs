@@ -122,7 +122,7 @@ namespace LicenseGatherer
 
             var entryPoint = _entryPointLocator.GetEntryPoint(PathToProjectOrSolution);
 
-            var dependencies = _projectDependencyResolver.ResolveDependencies(entryPoint);
+            var dependencies = await _projectDependencyResolver.ResolveDependenciesAsync(entryPoint);
             _reporter.OutputInvariant($"Resolving dependencies of {entryPoint.File.FullName}");
             _reporter.OutputInvariant($"\tcount {dependencies.Count}");
 

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Locator;
 using Moq;
@@ -21,7 +22,7 @@ namespace LicenseGatherer.Core.Tests
         }
 
         [Fact(Skip = ".NET SDK is not found")]
-        public void GivenOnePathToOneExistingProjectFile_WhenThisProjectDoesNotHaveOneProjectAssetsFileProperty_ThenOneException_ShouldBeThrown()
+        public async Task GivenOnePathToOneExistingProjectFile_WhenThisProjectDoesNotHaveOneProjectAssetsFileProperty_ThenOneException_ShouldBeThrown()
         {
             var mockFileSystem = new MockFileSystem();
             mockFileSystem.AddFile(@"c:\foo\bar\xyz.csproj", new MockFileData(@"<Project Sdk=""Microsoft.NET.Sdk"">
@@ -56,12 +57,12 @@ namespace LicenseGatherer.Core.Tests
             var entryPoint = new EntryPoint(mockFileSystem.FileInfo.FromFileName(@"c:\foo\bar\xyz.csproj"), EntryPointType.Project);
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(entryPoint);
-            action.Should().Throw<FileNotFoundException>().And.Message.Should().StartWith("The file does not exist");
+            Func<Task> action = async () => await cut.ResolveDependenciesAsync(entryPoint);
+            (await action.Should().ThrowAsync<FileNotFoundException>()).And.Message.Should().StartWith("The file does not exist");
         }
 
         [Fact(Skip = ".NET SDK is not found")]
-        public void GivenOnePathToOneExistingProjectFile_WhenThisProjectDoesHaveOneProjectAssetsFileProperty_ThenNoException_ShouldBeThrown()
+        public async Task GivenOnePathToOneExistingProjectFile_WhenThisProjectDoesHaveOneProjectAssetsFileProperty_ThenNoException_ShouldBeThrown()
         {
             var mockFileSystem = new MockFileSystem();
             mockFileSystem.AddFile(@"c:\foo\bar\xyz.csproj", new MockFileData(@"<Project Sdk=""Microsoft.NET.Sdk"">
@@ -99,8 +100,8 @@ namespace LicenseGatherer.Core.Tests
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
             mockFileSystem.AddFile(@"c:\foo\bar\obj\project.assets.json", new MockFileData(""));
 
-           Action action = () => cut.ResolveDependencies(entryPoint);
-            action.Should().NotThrow();
+           Func<Task> action = async () => await cut.ResolveDependenciesAsync(entryPoint);
+           await action.Should().NotThrowAsync();
         }
 
         [Fact(Skip = ".NET SDK is not found")]
@@ -140,8 +141,8 @@ namespace LicenseGatherer.Core.Tests
             var entryPoint = new EntryPoint(mockFileSystem.FileInfo.FromFileName(@"c:\foo\bar\xyz.csproj"), EntryPointType.Project);
             var cut = new ProjectDependencyResolver(mockFileSystem, Mock.Of<IEnvironment>());
 
-            Action action = () => cut.ResolveDependencies(entryPoint);
-            action.Should().Throw<FileNotFoundException>();
+            Func<Task> action = async () => await cut.ResolveDependenciesAsync(entryPoint);
+            action.Should().ThrowAsync<FileNotFoundException>();
         }
     }
 }
