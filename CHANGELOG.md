@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.0.4 - 2020-04-14
+
+### Added
+
+- Output file can be of type `csv`.
+- New option to delete existing output file before creating.
+
 ## 0.0.4 - 2020-04-13
 
 ### Added
 
 - Package information contains authors.
-- Solution file path can be passed 
+- Solution file path can be passed.
 
 ### Changed
 
