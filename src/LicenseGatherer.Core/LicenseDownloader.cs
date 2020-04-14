@@ -11,10 +11,12 @@ namespace LicenseGatherer.Core
     public class LicenseDownloader
     {
         private readonly HttpClient _httpClient;
+        private readonly IReporter _reporter;
 
-        public LicenseDownloader(HttpClient httpClient)
+        public LicenseDownloader(HttpClient httpClient, IReporter reporter)
         {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClient = httpClient;
+            _reporter = reporter;
         }
 
         public async Task<IImmutableDictionary<Uri, string>> DownloadAsync(IEnumerable<Uri> licenseLocations, CancellationToken cancellationToken)
@@ -27,6 +29,7 @@ namespace LicenseGatherer.Core
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string licenseContent;
+                _reporter.OutputInvariant($"Downloading license file form {licenseLocation}");
                 using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, licenseLocation))
                 {
                     string rawLicenseText;

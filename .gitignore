@@ -262,3 +262,5 @@ __pycache__/
 
 .buildpackages
 .paket
+
+launchSettings.json

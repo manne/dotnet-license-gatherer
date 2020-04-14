@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "LicenseGatherer": {
-      "commandName": "Project",
-      "commandLineArgs": "-p \"..\\..\\..\\..\\license-gatherer.sln\" -o \"licenses.json\""
-    }
-  }
-}

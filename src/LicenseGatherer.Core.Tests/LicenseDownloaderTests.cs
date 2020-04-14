@@ -23,8 +23,8 @@ namespace LicenseGatherer.Core.Tests
                 .ReturnsResponse(HttpStatusCode.OK, r => r.Content = new StringContent(""))
                 .Verifiable();
 
-            var httpClient = mock.CreateClient();
-            var cut = new LicenseDownloader(httpClient);
+            using var httpClient = mock.CreateClient();
+            var cut = new LicenseDownloader(httpClient, Mock.Of<IReporter>());
 
             // When
             _ = await cut.DownloadAsync(new[] { uri, uri }, CancellationToken.None);

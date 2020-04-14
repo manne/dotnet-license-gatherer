@@ -30,11 +30,12 @@ namespace LicenseGatherer
     public class Program
     {
         private readonly UriCorrector _uriCorrector;
-        private readonly LicenseLocator _licenseLocator;
+        private readonly PackageLocator _packageLocator;
         private readonly IFileSystem _fileSystem;
         private readonly ProjectDependencyResolver _projectDependencyResolver;
         private readonly LicenseDownloader _downloader;
         private readonly IReporter _reporter;
+        private readonly IEntryPointLocator _entryPointLocator;
 
         [Option(Description = "The path of the project or solution to gather the licenses. A directory can be specified, the value must end with \\, then for a solution in the working directory is searched. (optional)", LongName = "path", ShortName = "p", ShowInHelpText = true)]
         public string? PathToProjectOrSolution { get; set; }
@@ -73,32 +74,34 @@ namespace LicenseGatherer
                 {
                     services
                         .AddSingleton<UriCorrector>()
-                        .AddSingleton<LicenseLocator>()
+                        .AddSingleton<PackageLocator>()
                         .AddSingleton<IFileSystem, FileSystem>()
                         .AddSingleton<IEnvironment, Environment>()
                         .AddSingleton<ProjectDependencyResolver>()
                         .AddSingleton<CommandLineUtils.IReporter, ConsoleReporter>()
-                        .AddSingleton<IReporter, Reporter>();
+                        .AddSingleton<IReporter, Reporter>()
+                        .AddSingleton<IEntryPointLocator, EntryPointLocator>();
                     services.AddHttpClient<LicenseDownloader>();
                 })
                 .RunCommandLineApplicationAsync<Program>(args);
             return exitCode;
         }
 
-        public Program(UriCorrector uriCorrector, LicenseLocator licenseLocator, IFileSystem fileSystem,
-            ProjectDependencyResolver projectDependencyResolver, LicenseDownloader licenseDownloader, IReporter reporter)
+        public Program(UriCorrector uriCorrector, PackageLocator packageLocator, IFileSystem fileSystem,
+            ProjectDependencyResolver projectDependencyResolver, LicenseDownloader licenseDownloader, IReporter reporter, IEntryPointLocator entryPointLocator)
         {
             _uriCorrector = uriCorrector;
-            _licenseLocator = licenseLocator;
+            _packageLocator = packageLocator;
             _fileSystem = fileSystem;
             _projectDependencyResolver = projectDependencyResolver;
             _downloader = licenseDownloader;
             _reporter = reporter;
+            _entryPointLocator = entryPointLocator;
         }
 
         // ReSharper disable UnusedMember.Local
 #pragma warning disable IDE0051 // Remove unused private members
-        private async Task<int> OnExecuteAsync()
+        private async Task<int> OnExecuteAsync(CancellationToken cancellationToken)
 #pragma warning restore IDE0051 // Remove unused private members
         // ReSharper restore UnusedMember.Local
         {
@@ -128,19 +131,24 @@ namespace LicenseGatherer
                 outputFile = null;
             }
 
-            var cancellationToken = CancellationToken.None;
             var instances = MSBuildLocator.QueryVisualStudioInstances().ToList();
             MSBuildLocator.RegisterMSBuildPath(instances.First().MSBuildPath);
 
-            _reporter.Output("Resolving dependencies");
-            var dependencies = _projectDependencyResolver.ResolveDependencies(PathToProjectOrSolution);
+            var entryPoint = _entryPointLocator.GetEntryPoint(PathToProjectOrSolution);
+
+            var dependencies = await _projectDependencyResolver.ResolveDependenciesAsync(entryPoint);
+            _reporter.OutputInvariant($"Resolving dependencies of {entryPoint.File.FullName}");
             _reporter.OutputInvariant($"\tcount {dependencies.Count}");
 
             _reporter.Output("Extracting licensing information");
-            var licenseSpecs = _licenseLocator.Provide(dependencies);
+            var packageSpec = _packageLocator.Provide(dependencies);
 
             _reporter.Output("Correcting license locations");
-            var correctedLicenseLocations = _uriCorrector.Correct(licenseSpecs.Values.Select(v => v.Item1).Distinct(EqualityComparer<Uri>.Default));
+            var existingLicenses = packageSpec.Values
+                .Where(v => v.LicenseLocation != null)
+                .Select(v => v.LicenseLocation!)
+                .Distinct(EqualityComparer<Uri>.Default);
+            var correctedLicenseLocations = _uriCorrector.Correct(existingLicenses);
 
             _reporter.OutputInvariant($"Downloading licenses (total {correctedLicenseLocations.Count})");
             IImmutableDictionary<Uri, string> licenses;
@@ -156,11 +164,22 @@ namespace LicenseGatherer
 
             var licenseDependencyInformation = new List<LicenseDependencyInformation>();
 
-            foreach (var (package, (location, licenseExpression)) in licenseSpecs)
+            foreach (var (package, (location, licenseExpression, authors)) in packageSpec)
             {
-                var correctedUrl = correctedLicenseLocations[location].corrected;
-                var content = licenses.FirstOrDefault(l => l.Key == correctedUrl);
-                var dependencyInformation = new LicenseDependencyInformation(package, content.Value ?? string.Empty, location, correctedUrl, licenseExpression);
+                Uri? correctedUrl;
+                string licenseContent;
+                if (!(location is null))
+                {
+                    correctedUrl = correctedLicenseLocations[location].corrected;
+                    licenseContent = licenses.FirstOrDefault(l => l.Key == correctedUrl).Value ?? "";
+                }
+                else
+                {
+                    correctedUrl = null;
+                    licenseContent = "";
+                }
+
+                var dependencyInformation = new LicenseDependencyInformation(package, licenseContent, location, correctedUrl, licenseExpression, authors);
 
                 licenseDependencyInformation.Add(dependencyInformation);
             }
@@ -184,7 +203,8 @@ namespace LicenseGatherer
                                                       OriginalLicenseLocation = package.OriginalLicenseLocation.AbsoluteUri,
                                                       DownloadedLicenseLocation = package.DownloadedLicenseLocation.AbsoluteUri,
                                                       // Todo: What if it is LicenseOperator?
-                                                      LicenseExpression = (package.LicenseExpression as NuGet.Packaging.Licenses.NuGetLicense)
+                                                      LicenseExpression = (package.LicenseExpression as NuGet.Packaging.Licenses.NuGetLicense),
+                                                      Authors = package.Authors
                                                   }).ToList();
 
                             csv.Configuration.Delimiter = ";";
@@ -209,7 +229,7 @@ namespace LicenseGatherer
             }
             else
             {
-                _reporter.OutputInvariant($"Licenses of {PathToProjectOrSolution}");
+                _reporter.OutputInvariant($"Licenses:");
                 foreach (var dependencyInformation in licenseDependencyInformation)
                 {
                     _reporter.OutputInvariant($"dependency {dependencyInformation.PackageReference.Name} (version: {dependencyInformation.PackageReference.ResolvedVersion}, license expression: {dependencyInformation.LicenseExpression})");

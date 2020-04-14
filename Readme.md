@@ -1,6 +1,6 @@
 # LicenseGatherer
 
-[![Build Status](https://manne.visualstudio.com/public/_apis/build/status/manne.dotnet-license-gatherer?branchName=master)](https://manne.visualstudio.com/public/_build/latest?definitionId=1&branchName=master) [![Nuget](https://img.shields.io/nuget/v/LicenseGatherer?style=flat-square)](https://www.nuget.org/packages/LicenseGatherer/) [![GitHub License](https://img.shields.io/github/license/manne/dotnet-license-gatherer.svg?style=flat-square)](https://github.com/manne/dotnet-license-gatherer/blob/master/LICENSE.txt)
+[![Build Status](https://manne.visualstudio.com/public/_apis/build/status/manne.dotnet-license-gatherer?branchName=master&stageName=Build)](https://manne.visualstudio.com/public/_build/latest?definitionId=1&branchName=master) [![Nuget](https://img.shields.io/nuget/v/LicenseGatherer?style=flat-square)](https://www.nuget.org/packages/LicenseGatherer/) [![GitHub License](https://img.shields.io/github/license/manne/dotnet-license-gatherer.svg?style=flat-square)](https://github.com/manne/dotnet-license-gatherer/blob/master/LICENSE.txt)
 
 > LicenseGatherer provides license information from all transitive NuGet dependencies of your solution.
 
@@ -45,22 +45,26 @@ Options:
 The generated JSON file consists of the following schema:
 
 An array of **package**s.
+
+#### Package
+
 One package has these properties
 
 | Name                                    | Type   | Explanation                                                                          |
 |-----------------------------------------|--------|--------------------------------------------------------------------------------------|
-| [PackageReference](#packagereference)   | object | An object containing information of the package                                      |
+| [PackageReference](#packagereference)   | object | An object containing information of the package.                                     |
 | LicenseContent                          | string | The content of the license. Mostly the content is html.                              |
 | OriginalLicenseLocation                 | string | The url of the given license.                                                        |
 | DownloadedLicenseLocation               | string | The corrected url of the license. E.g. It replaces the github url with the raw once. |
-| [LicenseExpression](#licenseexpression) | object | The license expression of the package                                                |
+| [LicenseExpression](#licenseexpression) | object | The license expression of the package.                                               |
+| Authors                                 | string | The authors of the package.                                                          |
 
 ### CSV Output
 
 The generated `CSV` file consists of the same schema as [`JSON`](#json-output) :
 
 ```csv
-Name;Major;Minor;Build;Revision;MajorRevision;MinorRevision;IsLegacyVersion;Revision;IsSemVer2;OriginalVersion;Major;Minor;Patch;Release;IsPrerelease;HasMetadata;Metadata;LicenseContent;OriginalLicenseLocation;DownloadedLicenseLocation;Identifier;Plus;IsStandardLicense;Type
+Name;Major;Minor;Build;Revision;MajorRevision;MinorRevision;IsLegacyVersion;Revision;IsSemVer2;OriginalVersion;Major;Minor;Patch;Release;IsPrerelease;HasMetadata;Metadata;LicenseContent;OriginalLicenseLocation;DownloadedLicenseLocation;Identifier;Plus;IsStandardLicense;Type;Authors
 ```
 
 #### LicenseExpression

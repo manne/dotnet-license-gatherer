@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
@@ -28,70 +29,15 @@ namespace LicenseGatherer.Core
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        public IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> ResolveDependencies(string? projectOrSolutionPath)
-        {
-            IFileInfo file;
-            bool searchDirectory;
-            if (projectOrSolutionPath is null)
+        public async Task<IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?>> ResolveDependenciesAsync(EntryPoint entryPoint)
+            => entryPoint.Type switch
             {
-                searchDirectory = true;
-                projectOrSolutionPath = _fileSystem.Directory.GetCurrentDirectory();
-            }
-            else
-            {
-                var lastCharacter = projectOrSolutionPath.TrimEnd().Last();
-                if (lastCharacter == _fileSystem.Path.AltDirectorySeparatorChar || lastCharacter == _fileSystem.Path.DirectorySeparatorChar)
-                {
-                    searchDirectory = true;
-                }
-                else
-                {
-                    searchDirectory = false;
-                }
-            }
+                EntryPointType.Project => await AnalyzeProjectFileAsync(entryPoint.File),
+                EntryPointType.Solution => await AnalyzeSolutionFileAsync(entryPoint.File),
+                _ => throw new InvalidOperationException($"The entry point type {entryPoint.Type} is not supported.")
+            };
 
-            if (!searchDirectory)
-            {
-                var fromFileName = _fileSystem.FileInfo.FromFileName(projectOrSolutionPath);
-                if (!fromFileName.Exists)
-                {
-                    throw new FileNotFoundException("The file does not exist", projectOrSolutionPath);
-                }
-
-                file = fromFileName;
-            }
-            else
-            {
-                var directory = _fileSystem.DirectoryInfo.FromDirectoryName(projectOrSolutionPath);
-                if (!directory.Exists)
-                {
-                    throw new DirectoryNotFoundException(Invariant($"The directory {projectOrSolutionPath} does not exist"));
-                }
-
-                var solutionFiles = directory.GetFiles("*.sln", SearchOption.TopDirectoryOnly);
-                if (solutionFiles.Length == 0)
-                {
-                    throw new InvalidOperationException(Invariant($"The directory {directory.FullName} does not have one solution file"));
-                }
-
-                if (solutionFiles.Length > 1)
-                {
-                    throw new InvalidOperationException(Invariant($"The directory {directory.FullName} does have more than one solution file. Please specify the solution."));
-                }
-
-                file = solutionFiles[0];
-            }
-
-            return AnalyzeFileInfo(file);
-        }
-
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeFileInfo(IFileInfo projectFile)
-        {
-            var isSolution = ".sln".Equals(projectFile.Extension, StringComparison.OrdinalIgnoreCase);
-            return isSolution ? AnalyzeSolutionFile(projectFile) : AnalyzeProjectFile(projectFile);
-        }
-
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeSolutionFile(IFileInfo solutionFile)
+        private async Task<IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?>> AnalyzeSolutionFileAsync(IFileInfo solutionFile)
         {
             var solution = SolutionFile.Parse(solutionFile.FullName);
             var projects = solution.ProjectsInOrder;
@@ -105,14 +51,14 @@ namespace LicenseGatherer.Core
                 }
 
                 var projectFile = fileSystem.FileInfo.FromFileName(project.AbsolutePath);
-                var info = AnalyzeProjectFile(projectFile);
+                var info = await AnalyzeProjectFileAsync(projectFile);
                 result.SafeAddRange(info);
             }
 
             return ImmutableDictionary.CreateRange(InstalledPackageReferenceEqualityComparer.Instance, result);
         }
 
-        private IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?> AnalyzeProjectFile(IFileInfo projectFile)
+        private async Task<IImmutableDictionary<InstalledPackageReference, LocalPackageInfo?>> AnalyzeProjectFileAsync(IFileInfo projectFile)
         {
             const string projectAssetsPropertyName = "ProjectAssetsFile";
 
@@ -123,7 +69,7 @@ namespace LicenseGatherer.Core
                 var lastCurrentDirectory = _environment.CurrentDirectory;
                 try
                 {
-                    _environment.CurrentDirectory = projectFile.DirectoryName;
+                    _environment.CurrentDirectory = _fileSystem.Path.GetDirectoryName(projectFile.FullName);
                     using var projectCollection = new ProjectCollection();
 
                     var project = new Project(xmlStream, null, null, projectCollection);
@@ -150,7 +96,7 @@ namespace LicenseGatherer.Core
             }
 
             LockFile lockFile;
-            using (var stream = assetFile.OpenText())
+            await using (var stream = assetFile.OpenRead())
             {
                 lockFile = new LockFileFormat().Read(stream, assetFile.FullName);
             }
