@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using CsvHelper;
 
 using static System.FormattableString;
 
@@ -39,6 +41,12 @@ namespace LicenseGatherer
 
         [Option(Description = "The path of the JSON content output. If the no value is specified some information is printed into the console. (optional)", LongName = "outputpath", ShortName = "o", ShowInHelpText = true)]
         public string? OutputPath { get; set; }
+
+        [Option(Description = "The type content output. If no value is specified the output type is JSON. (optional)", LongName = "type", ShortName = "t", ShowInHelpText = true)]
+        public OutputType OutputType { get; set; } = OutputType.JSON;
+
+        [Option(Description = "Deletes the output file if it's already existing", LongName = "delete", ShortName = "d", ShowInHelpText = true)]
+        public bool DeleteFile { get; set; }
 
         [Option(Description = "Skip the download of licenses", LongName = "skipdownload", ShortName = "s", ShowInHelpText = true)]
         public bool SkipDownloadOfLicenses { get; set; }
@@ -103,7 +111,13 @@ namespace LicenseGatherer
             if (OutputPath != null)
             {
                 outputFile = _fileSystem.FileInfo.FromFileName(OutputPath);
-                if (outputFile.Exists)
+
+                if (outputFile.Exists && DeleteFile)
+                {
+                    _reporter.Output("The file to write the output to already exists. It will be deleted now");
+                    outputFile.Delete();
+                }
+                else if (outputFile.Exists)
                 {
                     _reporter.Error("The file to write the output to already exists. Specify another output path or delete the file");
                     return 1;
@@ -153,13 +167,45 @@ namespace LicenseGatherer
 
             if (outputFile != null)
             {
-                var fileContent = JsonConvert.SerializeObject(licenseDependencyInformation, Formatting.Indented);
+                switch (OutputType)
+                {
+                    case OutputType.CSV:
 
-                await using var writer = outputFile.OpenWrite();
-                var encoding = new UTF8Encoding(false, true);
-                var bytes = encoding.GetBytes(fileContent);
-                await writer.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
-                await writer.FlushAsync(cancellationToken);
+                        using (var stream = new StreamWriter(outputFile.FullName))
+                        using (var csv = new CsvWriter(stream, CultureInfo.InvariantCulture))
+                        {
+                            // creating anonymous type, cause directly using var throws OverflowException
+                            var contentToWrite = (from package
+                                                  in licenseDependencyInformation
+                                                  select new
+                                                  {
+                                                      Package = package.PackageReference,
+                                                      LicenseContent = package.LicenseContent,
+                                                      OriginalLicenseLocation = package.OriginalLicenseLocation.AbsoluteUri,
+                                                      DownloadedLicenseLocation = package.DownloadedLicenseLocation.AbsoluteUri,
+                                                      // Todo: What if it is LicenseOperator?
+                                                      LicenseExpression = (package.LicenseExpression as NuGet.Packaging.Licenses.NuGetLicense)
+                                                  }).ToList();
+
+                            csv.Configuration.Delimiter = ";";
+                            await csv.WriteRecordsAsync(contentToWrite);
+                        }
+
+                        break;
+                    case OutputType.JSON:
+                    default:
+                        var fileContent = JsonConvert.SerializeObject(licenseDependencyInformation, Formatting.Indented);
+
+                        await using (var writer = outputFile.OpenWrite())
+                        {
+                            var encoding = new UTF8Encoding(false, true);
+                            var bytes = encoding.GetBytes(fileContent);
+                            await writer.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
+                            await writer.FlushAsync(cancellationToken);
+                        }
+
+                        break;
+                }
             }
             else
             {

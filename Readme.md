@@ -6,7 +6,7 @@
 
 ## Limitation
 
-This tool only gathers licenses from projects using the project SDK.
+This tool only gathers licenses from projects using the [project SDK](https://docs.microsoft.com/en-us/dotnet/core/project-sdk/overview).
 
 ## Installation
 
@@ -32,6 +32,10 @@ Options:
                                            must end with \, then for a solution in the working directory is searched. (optional)
   -o|--outputpath <OUTPUT_PATH>            The path of the JSON content output. If the no value is specified some information is printed into
                                            the console. (optional)
+  -t|--type <OUTPUT_TYPE>                  The type content output.
+                                           If no value is specified the output type is JSON. (optional)
+                                           Allowed values are: JSON, CSV
+  -d|--delete                              Deletes the output file if it's already existing
   -s|--skipdownload                        Skip the download of licenses
   -?|-h|--help                             Show help information
 ```
@@ -46,10 +50,18 @@ One package has these properties
 | Name                                    | Type   | Explanation                                                                          |
 |-----------------------------------------|--------|--------------------------------------------------------------------------------------|
 | [PackageReference](#packagereference)   | object | An object containing information of the package                                      |
-| LicenseContent                          | string | The content of the license                                                           |
+| LicenseContent                          | string | The content of the license. Mostly the content is html.                              |
 | OriginalLicenseLocation                 | string | The url of the given license.                                                        |
 | DownloadedLicenseLocation               | string | The corrected url of the license. E.g. It replaces the github url with the raw once. |
-| [LicenseExpression](#licenseexpression) | object | The license expression of the package                                                |                                              |
+| [LicenseExpression](#licenseexpression) | object | The license expression of the package                                                |
+
+### CSV Output
+
+The generated `CSV` file consists of the same schema as [`JSON`](#json-output) :
+
+```csv
+Name;Major;Minor;Build;Revision;MajorRevision;MinorRevision;IsLegacyVersion;Revision;IsSemVer2;OriginalVersion;Major;Minor;Patch;Release;IsPrerelease;HasMetadata;Metadata;LicenseContent;OriginalLicenseLocation;DownloadedLicenseLocation;Identifier;Plus;IsStandardLicense;Type
+```
 
 #### LicenseExpression
 

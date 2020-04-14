@@ -3,6 +3,12 @@ using LicenseGatherer.Core;
 
 namespace LicenseGatherer
 {
+    public enum OutputType
+    {
+        JSON,
+        CSV
+    }
+
     public class Reporter : IReporter
     {
         private readonly McMaster.Extensions.CommandLineUtils.IReporter _reporter;
