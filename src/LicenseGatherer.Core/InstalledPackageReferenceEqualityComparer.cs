@@ -17,7 +17,7 @@ namespace LicenseGatherer.Core
             return HashCode.Combine(co.Name, co.ResolvedVersion);
         }
 
-        public bool Equals(InstalledPackageReference x1, InstalledPackageReference x2)
+        public bool Equals(InstalledPackageReference? x1, InstalledPackageReference? x2)
         {
             if (ReferenceEquals(x1, x2))
             {
